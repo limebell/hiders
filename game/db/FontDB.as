@@ -1,18 +1,21 @@
 ﻿package game.db {
 	import flash.text.TextFormat;
-	import game.asset.Font_HYShin;
 	import flash.text.Font;
 	
 	public class FontDB {
-		private static var fonts:Vector.<Font>;
+		private static var fonts:Object;
+		public static const
+		HYShin:String = "hy_shin",
+		NBareun:String = "nanumbareunlight";
 
 		{
-			fonts = new Vector.<Font>();
-			fonts.push(new Font_HYShin());
+			fonts = new Object();
+			fonts.hy_shin = new Font_HYShin();
+			fonts.nanumbareunlight = new Font_NanumbareunLight();
 		}
 		
-		public static function getFontName(index:int):String {
-			return fonts[index].fontName;
+		public static function getFontName(font:String):String {
+			return fonts[font].fontName;
 		}
 
 	}

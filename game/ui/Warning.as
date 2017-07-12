@@ -16,7 +16,7 @@
 			warning = this;
 			
 			_textField = new TextField();
-			_textFormat = new TextFormat(game.db.FontDB.getFontName(0));
+			_textFormat = new TextFormat(FontDB.getFontName(FontDB.HYShin));
 			_textFormat.align = "center";
 			_textFormat.leading = 7;
 			_textFormat.size = 20;

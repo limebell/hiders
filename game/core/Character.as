@@ -3,7 +3,6 @@
 	import flash.geom.Point;
 	import game.db.CharacterDB;
 	import game.db.CharacterData;
-	import game.db.ClipDB;
 	
 	public class Character extends MovieClip {
 		private var _clip:MovieClip;
@@ -15,7 +14,7 @@
 		public function Character(index:int){
 			footPoint = new Point(0, 0);
 			_info = CharacterDB.getCharacterAt(index);
-			_clip = ClipDB.getClip(_info.charName);
+			_clip = _info.clip;
 			this.addChild(_clip);
 		}
 		

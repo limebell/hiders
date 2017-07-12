@@ -2,9 +2,7 @@
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import game.db.CharacterDB;
-	import game.db.ClipDB;
 	import game.db.CharacterData;
-	import game.asset.clip.characterSelectUIClip;
 	import flash.events.MouseEvent;
 	import flash.text.TextFormat;
 	import game.db.FontDB;
@@ -33,7 +31,7 @@
 			_leftbtn = _clip.leftbtn;
 			_rightbtn = _clip.rightbtn;
 			
-			_textFormat = new TextFormat(game.db.FontDB.getFontName(0));
+			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun));
 			_textFormat.align = "center";
 			_textFormat.leading = 7;
 			
@@ -102,7 +100,7 @@
 			
 			if(_portrait != null) this.removeChild(_portrait);
 			
-			_portrait = ClipDB.getClip(_character.charName);
+			_portrait = _character.clip;
 			this.addChild(_portrait);
 			_portrait.gotoAndStop("portrait");
 			_portrait.y = -200;

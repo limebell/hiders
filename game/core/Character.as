@@ -5,41 +5,65 @@
 	import game.db.CharacterData;
 	
 	public class Character extends MovieClip {
+		private const
+		STAY:String = "stay",
+		WALK:String = "walk",
+		CLIMB:String = "climb",
+		RIDE:String = "ride";
+		
+		/*
+		STAY_HURT:String = "stay_hurt",
+		WALK_HURT:String = "walk_hurt",
+		CLIMB_HURT:String = "climb_hurt",
+		RIDE_HURT:String = "ride_hurt";
+		STAY_TIRED:String = "stay_tired",
+		WALK_TIRED:String = "walk_tired",
+		CLIMB_TIRED:String = "climb_tired",
+		RIDE_TIRED:String = "ride_tired";
+		*/
+		
 		private var _clip:MovieClip;
-		
-		private var footPoint:Point;
-		
 		private var _info:CharacterData;
+		private var _state:String;
+		private var _lastState:String;
 		
 		public function Character(index:int){
-			footPoint = new Point(0, 0);
 			_info = CharacterDB.getCharacterAt(index);
 			_clip = _info.clip;
 			this.addChild(_clip);
+			this.state = STAY;
 		}
 		
-		public function get charName():String {
-			return _info.charName;
+		public function getState():String {
+			return _state;
 		}
 		
-		public function get description():String {
-			return _info.description;
+		private function get state():String {
+			return _state;
 		}
 		
-		public function get baseATK():int {
-			return _info.baseATK;
+		private function set state(t:String):void {
+			_clip.gotoAndPlay(t);
+			_lastState = _state;
+			_state = t;
 		}
 		
-		public function get baseDEF():int {
-			return _info.baseDEF;
+		public function goLeft():void {
+			_clip.scaleX = -1;
+			this.state = WALK;
 		}
 		
-		public function get baseHP():int {
-			return _info.baseHP;
+		public function goRight():void {
+			_clip.scaleX = 1;
+			this.state = WALK;
 		}
 		
-		public function get baseST():int {
-			return _info.baseST;
+		public function climb():void {
+			this.state = CLIMB;
+		}
+		
+		public function standStill():void {
+			this.state = STAY;
 		}
 	}
 }

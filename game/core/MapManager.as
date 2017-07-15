@@ -17,33 +17,59 @@
 			_globalLocation = "0";
 			this.addEventListener(MapEvent.MOVE_LEFT, moveLeftHandler);
 			this.addEventListener(MapEvent.MOVE_RIGHT, moveRightHandler);
-			redraw();
+			setButtonOf(_globalLocation);
+			redrawFromTo();
 		}
 		
 		private function moveLeftHandler(e:MapEvent):void {
+			if(_tween != null && _tween.isPlaying) return;
 			_world.character.goLeft();
 			moveTo(String(int(_globalLocation)-1), 10);
 		}
 		
 		private function moveRightHandler(e:MapEvent):void {
+			if(_tween != null && _tween.isPlaying) return;
 			_world.character.goRight();
 			moveTo(String(int(_globalLocation)+1), 10);
 		}
 		
 		private function moveTo(gloc:String, spd:int):void {
+			//버튼 컨트롤
+			_world.setButton();
 			//장거리 이동도 가능하도록 수정하고 싶음, 뭔가 gloc이 바뀔때마다 이벤트가 발생해서 새로그리도록?
 			if(!isBuilding(_globalLocation)){
 				if(_tween != null && _tween.isPlaying) _tween.stop();
 				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.BLOCK_LENGTH, Math.abs((int(gloc)*World.BLOCK_LENGTH+_world.backField.x))/spd);
 			}
+			
+			//임시
+			setButtonOf(gloc);
+			
+			redrawFromTo(_globalLocation, gloc);
 			_globalLocation = gloc;
-			redraw();
 		}
 		
-		private function redraw():void {
+		private function setButtonOf(gloc:String):void {
+			if(!isBuilding(gloc)){
+				switch(_world.map.caveAt(int(gloc)).x){
+					case 0:
+						_world.setButton(true, true);
+						break;
+					case 1:
+						_world.setButton(false, true);
+						break;
+					case 2:
+						_world.setButton(true, false);
+						break;
+				}
+			}
+		}
+		
+		private function redrawFromTo(from:String = "$", to:String = "$"):void {
+			var _from:String = (from=="$"?_globalLocation:from), _to:String = (to=="$"?_globalLocation:to);
 			if(!isBuilding(_globalLocation)){
 				for(var i:int = 0; i < _world.map.caveLength; i++){
-					if(Math.abs(i-int(_globalLocation)) < 3)
+					if(Math.abs(i-int(from)) < 2 || Math.abs(i-int(to)) < 2)
 						_world.caves[i].visible = true;
 					else
 						_world.caves[i].visible = false;

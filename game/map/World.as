@@ -7,7 +7,7 @@
 	
 	public class World extends MovieClip {
 		public static const
-		BLOCK_LENGTH:int = 800,
+		BLOCK_LENGTH:int = 1000,
 		SIDE_BUTTON_WIDTH:int = 100,
 		SIDE_BUTTON_HEIGHT:int = 600,
 		UPDOWN_BUTTON_WIDTH:int = 800,
@@ -48,6 +48,16 @@
 						_caves[i].visible = false;
 						break;
 					case 1:
+						_caves[i] = new cave_1_0();
+						_backField.addChild(_caves[i]);
+						_caves[i].x = i*BLOCK_LENGTH;
+						_caves[i].visible = false;
+						break;
+					case 2:
+						_caves[i] = new cave_2_0();
+						_backField.addChild(_caves[i]);
+						_caves[i].x = i*BLOCK_LENGTH;
+						_caves[i].visible = false;
 						break;
 				}
 			}
@@ -90,6 +100,8 @@
 			_moveButtons.rightbtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			_moveButtons.upbtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			_moveButtons.downbtn.addEventListener(MouseEvent.CLICK, clickHandler);
+			
+			setButton();
 		}
 		
 		private function clickHandler(e:MouseEvent):void {
@@ -116,6 +128,13 @@
 		private var _frontField:MovieClip;
 		private var _moveButtons:MovieClip;
 		private var _map:Map;*/
+		
+		public function setButton(l:Boolean = false, r:Boolean = false, u:Boolean = false, d:Boolean = false):void {
+			_moveButtons.leftbtn.mouseEnabled = l;
+			_moveButtons.rightbtn.mouseEnabled = r;
+			_moveButtons.upbtn.mouseEnabled = u;
+			_moveButtons.downbtn.mouseEnabled = d;
+		}
 
 		public function get character():Character {
 			return _character;

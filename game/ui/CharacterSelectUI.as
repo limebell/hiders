@@ -103,7 +103,7 @@
 			_portrait = _character.clip;
 			this.addChild(_portrait);
 			_portrait.gotoAndStop("portrait");
-			_portrait.y = -200;
+			_portrait.y = -210;
 			
 			_name.text = _character.charName;
 			_skillName.text = _skill.skillName;

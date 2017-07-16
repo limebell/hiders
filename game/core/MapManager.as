@@ -5,6 +5,7 @@
 	
 	import game.map.World;
 	import game.event.MapEvent;
+	import fl.transitions.TweenEvent;
 	
 	public class MapManager extends EventDispatcher {
 		private var _world:World;
@@ -24,12 +25,14 @@
 		private function moveLeftHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
 			_world.character.goLeft();
+			Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
 			moveTo(String(int(_globalLocation)-1), 10);
 		}
 		
 		private function moveRightHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
 			_world.character.goRight();
+			Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
 			moveTo(String(int(_globalLocation)+1), 10);
 		}
 		
@@ -40,13 +43,21 @@
 			if(!isBuilding(_globalLocation)){
 				if(_tween != null && _tween.isPlaying) _tween.stop();
 				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.BLOCK_LENGTH, Math.abs((int(gloc)*World.BLOCK_LENGTH+_world.backField.x))/spd);
+				
 			}
+			
+			_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 			
 			//임시
 			setButtonOf(gloc);
 			
 			redrawFromTo(_globalLocation, gloc);
 			_globalLocation = gloc;
+		}
+		
+		private function tweenFinishHandler(e:TweenEvent):void {
+			_world.character.standStill();
+			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 		}
 		
 		private function setButtonOf(gloc:String):void {

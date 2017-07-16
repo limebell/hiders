@@ -101,6 +101,16 @@
 			_moveButtons.upbtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			_moveButtons.downbtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			
+			_moveButtons.leftbtn.addEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);
+			_moveButtons.rightbtn.addEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);
+			_moveButtons.upbtn.addEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);
+			_moveButtons.downbtn.addEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);
+			
+			_moveButtons.leftbtn.addEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+			_moveButtons.rightbtn.addEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+			_moveButtons.upbtn.addEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+			_moveButtons.downbtn.addEventListener(MouseEvent.MOUSE_OUT, mouseOutHandler);
+			
 			setButton();
 		}
 		
@@ -119,6 +129,14 @@
 					trace("down");
 					break;
 			}
+		}
+		
+		private function mouseOverHandler(e:MouseEvent):void {
+			Game.currentGame.setMouse("move");
+		}
+		
+		private function mouseOutHandler(e:MouseEvent):void {
+			Game.currentGame.setMouse("standard");
 		}
 		
 		/*private var _character:Character;

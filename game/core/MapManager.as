@@ -75,6 +75,14 @@
 						_world.caves[i].visible = false;
 				}
 			}
+			
+			//맵오브젝트 그리는 부분
+			//...
+			/*for(i=0;i<맵오브젝트 개수;i++){
+				i번째 오브젝트의 글로벌 위치가 저 프롬투 범위에 있으면? > visible = true;
+				아니면 false
+			}*/
+			
 		}
 		
 		private function isBuilding(gloc:String):Boolean {

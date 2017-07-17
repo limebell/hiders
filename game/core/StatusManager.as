@@ -159,6 +159,8 @@
 			if(_tweenST != null && _tweenST.isPlaying) _tweenST.stop();
 			_tweenHP = new Tween(_ui.hpBar, "scaleX", Regular.easeOut, _ui.hpBar.scaleX, _curHP/_maxHP, 36);
 			_tweenST = new Tween(_ui.stBar, "scaleX", Regular.easeOut, _ui.stBar.scaleX, _curST/_maxST, 36);
+			_ui.hpTxt = _curHP+"/"+_maxHP;
+			_ui.stTxt = _curST+"/"+_maxST;
 		}
 	}
 	

@@ -43,7 +43,6 @@
 			if(!isBuilding(_globalLocation)){
 				if(_tween != null && _tween.isPlaying) _tween.stop();
 				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.BLOCK_LENGTH, Math.abs((int(gloc)*World.BLOCK_LENGTH+_world.backField.x))/spd);
-				
 			}
 			
 			_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
@@ -57,6 +56,7 @@
 		
 		private function tweenFinishHandler(e:TweenEvent):void {
 			_world.character.standStill();
+			_world.backField/x = -int(_globalLocation)*World.BLOCK_LENGTH;
 			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 		}
 		
@@ -80,7 +80,7 @@
 			var _from:String = (from=="$"?_globalLocation:from), _to:String = (to=="$"?_globalLocation:to);
 			if(!isBuilding(_globalLocation)){
 				for(var i:int = 0; i < _world.map.caveLength; i++){
-					if(Math.abs(i-int(from)) < 2 || Math.abs(i-int(to)) < 2)
+					if(isCaveInRange(i, _from, _to))
 						_world.caves[i].visible = true;
 					else
 						_world.caves[i].visible = false;
@@ -96,6 +96,18 @@
 			
 		}
 		
+		private function isCaveInRange(i:int, from:String, to:String):Boolean {
+			var _small:int, _large:int;
+			if(int(from)>int(to)){
+				_small = int(to);
+				_large = int(from);
+			} else {
+				_small = int(from);
+				_large = int(to);
+			}
+			return (i>_small-2&&i<_large+2);
+		}
+		
 		private function isBuilding(gloc:String):Boolean {
 			var flag = false;
 			for(var i:int = 0; i < gloc.length; i++){
@@ -106,6 +118,15 @@
 			}
 			return flag;
 		}
+		
+		public function goto(gloc:String, spd:int):void {
+			moveTo(gloc, spd);
+		}
+		
+		public function get currentLocation():String {
+			return _globalLocation;
+		}
+		
 		/*
 		//from MapObjects.as
 		

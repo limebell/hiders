@@ -7,14 +7,18 @@
 	import game.ui.Warning;
 	import game.map.Map;
 	import game.ui.GameplayUI;
+	import game.ui.ConsoleUI;
+	import flash.events.KeyboardEvent;
+	import flash.ui.Keyboard;
 	
 	public class Game extends EventDispatcher {
 		private static const NO_DATA:int = -1;
 		public static var currentGame:Game;
 		
-		private var _root:Object;
+		private var _root:MovieClip;
 		private var _data:Object;
 		
+		private var _console:ConsoleUI;
 		private var _ui:GameplayUI;
 		private var _world:World;
 		private var _map:Map;
@@ -31,12 +35,15 @@
 			currentGame = this;
 			_data = loadData;
 			
-			_root = Object(root);
+			_root = root;
 			root.gotoAndStop("play");
 			_root.shade.gotoAndPlay(2);
 			_display = _root.disp;
 			
+			_root.stage.addEventListener(KeyboardEvent.KEY_DOWN, keydownHandler);
+			
 			if(!initGame()) throw new IllegalOperationError("게임을 초기화 할 수 없습니다.");
+			else startGame();
 		}
 		
 		private function checkInit():void {
@@ -51,15 +58,7 @@
 				
 				_characterIndex = _root.characterSelectUI.index;
 				
-				_ui = new GameplayUI();
-				_statusManager = new StatusManager(_ui, true, _characterIndex);
-				
 				_map = new Map();
-				_world = new World(new Character(_characterIndex), _map);
-				_mapManager = new MapManager(_world);
-				
-				_display.addChild(_world);
-				_display.addChild(_ui);
 				return true;
 			} else return loadData();
 		}
@@ -70,7 +69,18 @@
 		}
 		
 		private function startGame():void {
+			_world = new World(new Character(_characterIndex), _map);
+			_mapManager = new MapManager(_world);
+				
+			_ui = new GameplayUI();
+			_statusManager = new StatusManager(_ui, true, _characterIndex);
 			
+			_console = new ConsoleUI();
+			_console.visible = false;
+			
+			_display.addChild(_world);
+			_display.addChild(_ui);
+			_display.addChild(_console);
 		}
 		
 		public function setMouse(state:String):void {
@@ -91,6 +101,21 @@
 		
 		public function get mapManager():MapManager {
 			return _mapManager;
+		}
+		
+		private function keydownHandler(e:KeyboardEvent):void {
+			switch(e.keyCode){
+				case 192:	//`
+					//open console
+					_console.switchState();
+					break;
+				case Keyboard.I:
+					//open inventory;
+					break;
+				case Keyboard.EXIT:
+					//open menu;
+					break;
+			}
 		}
 	}
 }

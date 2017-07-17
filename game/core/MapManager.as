@@ -42,7 +42,7 @@
 			//장거리 이동도 가능하도록 수정하고 싶음, 뭔가 gloc이 바뀔때마다 이벤트가 발생해서 새로그리도록?
 			if(!isBuilding(_globalLocation)){
 				if(_tween != null && _tween.isPlaying) _tween.stop();
-				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.BLOCK_LENGTH, Math.abs((int(gloc)*World.BLOCK_LENGTH+_world.backField.x))/spd);
+				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.BLOCK_LENGTH, Math.abs((int(gloc)*World.BLOCK_LENGTH+_world.backField.x))/Number(spd));
 			}
 			
 			_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
@@ -56,7 +56,7 @@
 		
 		private function tweenFinishHandler(e:TweenEvent):void {
 			_world.character.standStill();
-			_world.backField/x = -int(_globalLocation)*World.BLOCK_LENGTH;
+			_world.backField.x = -int(_globalLocation)*World.BLOCK_LENGTH;
 			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 		}
 		
@@ -119,12 +119,24 @@
 			return flag;
 		}
 		
-		public function goto(gloc:String, spd:int):void {
-			moveTo(gloc, spd);
+		public function goto(gloc:String, spd:int):Boolean {
+			if(!isBuilding(gloc)){
+				if(_world.map.caveLength<=int(gloc)) return false;
+				else {
+					moveTo(gloc, spd);
+					return true;
+				}
+			} else {
+				return false;
+			}
 		}
 		
 		public function get currentLocation():String {
 			return _globalLocation;
+		}
+		
+		public function get caveLength():int {
+			return _world.map.caveLength;
 		}
 		
 		/*

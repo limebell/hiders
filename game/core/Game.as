@@ -103,6 +103,10 @@
 			return _mapManager;
 		}
 		
+		public function get root():MovieClip {
+			return _root;
+		}
+		
 		private function keydownHandler(e:KeyboardEvent):void {
 			switch(e.keyCode){
 				case 192:	//`

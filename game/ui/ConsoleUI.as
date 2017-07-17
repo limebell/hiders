@@ -29,6 +29,8 @@
 			_inputText.type = "input";
 			_outputText.selectable = true;
 			
+			_inputText.restrict = "^`";
+			
 			_outputText.width = _inputText.width = 900;
 			_outputText.height = 450;
 			
@@ -64,11 +66,16 @@
 			
 			switch(script){
 				case "help":
-					msg = "currentLocation@\nadd@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)"
+					msg = "currentLocation@\ncaveLength@\n"+
+							"add@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)"
 					break;
 				
 				case "currentLocation":
 					msg = "현재 위치는 "+Game.currentGame.mapManager.currentLocation+"입니다.";
+					break;
+				
+				case "caveLength":
+					msg = "동굴의 길이는 "+Game.currentGame.mapManager.caveLength+"입니다.";
 					break;
 				
 				case "add":
@@ -186,8 +193,9 @@
 							}
 							if(!flag){
 								//일단 cave에 있는 상태라고 가정하고 진행
-								Game.currentGame.mapManager.goto(temp1, int(temp2));
-								msg = temp1+"까지 "+temp2+"의 속도로 이동합니다.";
+								if(Game.currentGame.mapManager.goto(temp1, int(temp2))) msg = temp1+"까지 "+temp2+"의 속도로 이동합니다.";
+								else msg = "이동 범위가 잘못되었습니다.";
+								
 							} else msg = "아직 빌딩은 구현되지 않았습니다.";
 						}
 					}
@@ -207,6 +215,7 @@
 			if(this.visible == false){
 				this.visible = true;
 				_inputText.text = "";
+				Game.currentGame.root.stage.focus = _inputText;
 				_inputText.addEventListener(KeyboardEvent.KEY_DOWN, keydownHandler);
 			} else {
 				this.visible = false;

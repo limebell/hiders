@@ -8,6 +8,7 @@
 	public class World extends MovieClip {
 		public static const
 		BLOCK_LENGTH:int = 1000,
+		CHARACTER_FOOT_Y:int = 200,
 		SIDE_BUTTON_WIDTH:int = 100,
 		SIDE_BUTTON_HEIGHT:int = 600,
 		UPDOWN_BUTTON_WIDTH:int = 800,
@@ -71,7 +72,7 @@
 			}
 			//initiating character
 			_character.standStill();
-			_character.y = 400;
+			_character.y = CHARACTER_FOOT_Y;
 			//initiating moveButtnos
 			_moveButtons.leftbtn = new button();
 			_moveButtons.rightbtn = new button();

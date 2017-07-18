@@ -1,12 +1,14 @@
 ﻿package game.ui {
-	import flash.display.MovieClip;
-	import flash.text.TextField;
 	import game.db.CharacterDB;
 	import game.db.CharacterData;
-	import flash.events.MouseEvent;
-	import flash.text.TextFormat;
 	import game.db.FontDB;
 	import game.db.SkillData;
+	
+	import flash.display.MovieClip;
+	import flash.text.TextField;
+	import flash.events.MouseEvent;
+	import flash.text.TextFormat;
+	import flash.filters.GlowFilter;
 	
 	public class CharacterSelectUI extends MovieClip {
 		private var _index:int;
@@ -15,6 +17,7 @@
 		
 		private var _character:CharacterData;
 		private var _portrait:MovieClip;
+		private var _portraitField:MovieClip;
 		private var _name:TextField;
 		private var _status:TextField;
 		private var _description:TextField;
@@ -35,6 +38,8 @@
 			_textFormat.align = "center";
 			_textFormat.leading = 7;
 			
+			_portraitField = new MovieClip();
+			
 			_name = new TextField();
 			_skillName = new TextField();
 			_skillText = new TextField();
@@ -42,8 +47,11 @@
 			_description = new TextField();
 			
 			_textFormat.size = 20;
+			_textFormat.bold = true;
 			_name.defaultTextFormat = _textFormat;
+			_name.filters = [new GlowFilter(0xffffffff, 1, 2, 2, 10, 3)];
 			_textFormat.size = 18;
+			_textFormat.bold = false;
 			_skillName.defaultTextFormat = _textFormat;
 			_textFormat.size = 15;
 			_skillText.defaultTextFormat = _textFormat;
@@ -52,6 +60,7 @@
 			_textFormat.align = "left";
 			_description.defaultTextFormat = _textFormat;
 			
+			this.addChild(_portraitField);
 			this.addChild(_name);
 			this.addChild(_skillName);
 			this.addChild(_skillText);
@@ -98,10 +107,10 @@
 			_character = CharacterDB.getCharacterAt(index);
 			_skill = _character.skill;
 			
-			if(_portrait != null) this.removeChild(_portrait);
+			if(_portrait != null) _portraitField.removeChild(_portrait);
 			
-			_portrait = _character.clip;
-			this.addChild(_portrait);
+			_portrait = _character.portrait;
+			_portraitField.addChild(_portrait);
 			_portrait.gotoAndStop("portrait");
 			_portrait.y = -210;
 			

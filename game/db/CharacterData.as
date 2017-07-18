@@ -3,7 +3,7 @@
 	
 	public class CharacterData {
 		
-		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _skill:SkillData, _clip:MovieClip;
+		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _skill:SkillData, _clip:MovieClip, _portrait:MovieClip;
 
 		public function get charName():String {
 			return _name;
@@ -35,6 +35,10 @@
 		
 		public function get clip():MovieClip {
 			return _clip;
+		}
+		
+		public function get portrait():MovieClip {
+			return _portrait;
 		}
 
 	}

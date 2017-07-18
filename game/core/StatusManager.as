@@ -27,8 +27,10 @@
 		private var _atk:int;
 		private var _def:int;
 
-		private var _maxHP:int;
-		private var _maxST:int;
+		private var _realMaxHP:int;
+		private var _realMaxST:int;
+		private var _finalMaxHP:int;
+		private var _finalMaxST:int;
 		private var _curHP:int;
 		private var _curST:int;
 		
@@ -39,24 +41,26 @@
 				_tempData = CharacterDB.getCharacterAt(charIndex);
 				_atk = _tempData.baseATK;
 				_def = _tempData.baseDEF;
-				_maxHP = _tempData.baseHP;
-				_maxST = _tempData.baseST;
+				_realMaxHP = _tempData.baseHP;
+				_realMaxST = _tempData.baseST;
 			} else {
 				if(atk == -1 || def == -1 || maxHP == -1 || maxST == -1) throw new IllegalOperationError("status manager : 잘못된 초기값입니다.");
 				_atk = atk;
 				_def = def;
 				
-				_maxHP = maxHP;
-				_maxST = maxST;
+				_realMaxHP = maxHP;
+				_realMaxST = maxST;
 			}
 			
+			adjustSkill();
+			
 			if(curHP == -1)
-				_curHP = _maxHP;
+				_curHP = _finalMaxHP;
 			else
 				_curHP = curHP;
 			
 			if(curST == -1)
-				_curST = _maxST;
+				_curST = _finalMaxST;
 			else
 				_curST = curST;
 			
@@ -72,10 +76,10 @@
 					_def += amount;
 					break;
 				case MAX_HP:
-					_maxHP += amount;
+					_realMaxHP += amount;
 					break;
 				case MAX_ST:
-					_maxST += amount;
+					_realMaxST += amount;
 					break;
 				case CUR_HP:
 					_curHP += amount;
@@ -85,8 +89,10 @@
 					break;
 			}
 			
-			if( _curHP > _maxHP ) _curHP = _maxHP;
-			if( _curST > _maxST ) _curST = _maxST;
+			adjustSkill();
+			
+			if( _curHP > _finalMaxHP ) _curHP = _finalMaxHP;
+			if( _curST > _finalMaxST ) _curST = _finalMaxST;
 			
 			refresh();
 		}
@@ -100,10 +106,10 @@
 					_def -= amount;
 					break;
 				case MAX_HP:
-					_maxHP -= amount;
+					_realMaxHP -= amount;
 					break;
 				case MAX_ST:
-					_maxST -= amount;
+					_realMaxST -= amount;
 					break;
 				case CUR_HP:
 					_curHP -= amount;
@@ -113,10 +119,12 @@
 					break;
 			}
 			
-			if( _maxHP < 0 ) _maxHP = 0;
-			if( _maxST < 0 ) _maxST = 0;
-			if( _curHP > _maxHP ) _curHP = _maxHP;
-			if( _curST > _maxST ) _curST = _maxST;
+			adjustSkill();
+			
+			if( _finalMaxHP < 0 ) _finalMaxHP = 0;
+			if( _finalMaxST < 0 ) _finalMaxST = 0;
+			if( _curHP > _finalMaxHP ) _curHP = _finalMaxHP;
+			if( _curST > _finalMaxST ) _curST = _finalMaxST;
 			if( _curST <= 0 ){
 				_curHP += _curST*2;
 				_curST = 0;
@@ -138,10 +146,10 @@
 					_def = amount;
 					break;
 				case MAX_HP:
-					_maxHP = amount;
+					_realMaxHP = amount;
 					break;
 				case MAX_ST:
-					_maxST = amount;
+					_realMaxST = amount;
 					break;
 				case CUR_HP:
 					_curHP = amount;
@@ -151,16 +159,28 @@
 					break;
 			}
 			
-			refresh()
+			adjustSkill();
+			refresh();
+		}
+		
+		private function adjustSkill():void {
+			if(CharacterDB.getCharacterAt(Game.currentGame.character).skill.skillCode == 0) _finalMaxHP = int(_realMaxHP*1.1);
+			else _finalMaxHP = _realMaxHP;
+			_finalMaxST = _realMaxST;
 		}
 		
 		private function refresh():void {
 			if(_tweenHP != null && _tweenHP.isPlaying) _tweenHP.stop();
 			if(_tweenST != null && _tweenST.isPlaying) _tweenST.stop();
-			_tweenHP = new Tween(_ui.hpBar, "scaleX", Regular.easeOut, _ui.hpBar.scaleX, _curHP/_maxHP, 36);
-			_tweenST = new Tween(_ui.stBar, "scaleX", Regular.easeOut, _ui.stBar.scaleX, _curST/_maxST, 36);
-			_ui.hpTxt = _curHP+"/"+_maxHP;
-			_ui.stTxt = _curST+"/"+_maxST;
+			_tweenHP = new Tween(_ui.hpBar, "scaleX", Regular.easeOut, _ui.hpBar.scaleX, _curHP/_finalMaxHP, 36);
+			_tweenST = new Tween(_ui.stBar, "scaleX", Regular.easeOut, _ui.stBar.scaleX, _curST/_finalMaxST, 36);
+			_ui.hpTxt = _curHP+"/"+_finalMaxHP;
+			_ui.stTxt = _curST+"/"+_finalMaxST;
+		}
+		
+		public function get status():String {
+			return "ATK : "+_atk+", DEF : "+_def+", realMaxHP : "+_realMaxHP+", finalMaxHP : "+_finalMaxHP+", curHP : "+_curHP+
+				", realMaxST : "+_realMaxST+", finalMaxST : "+_finalMaxST+", curST : "+_curST;
 		}
 	}
 	

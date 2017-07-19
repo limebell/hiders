@@ -6,8 +6,8 @@
 		public static const
 		MOVE_LEFT:String = "moveLeft",
 		MOVE_RIGHT:String = "moveRight",
-		ENTER_BUILDING:String = "enterBuilding",
-		LEAVE_BUILDING:String = "leaveBuilding";
+		MOVE_UP:String = "moveUp",
+		MOVE_DOWN:String = "moveDown";
 
 		public function MapEvent(type:String, bubbles:Boolean = false, cancelable:Boolean = false) {
 			super(type, bubbles, cancelable);

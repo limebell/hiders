@@ -17,6 +17,7 @@
 		public static function fadeIn(t:int = 36):void {
 			if(_tween != null && _tween.isPlaying) _tween.stop();
 			_shade.mouseEnabled = true;
+			_shade.visible = true;
 			_tween = new Tween(_shade, "alpha", None.easeIn, 1, 0, t);
 			_tween.addEventListener(TweenEvent.MOTION_FINISH, finishHandler);
 		}
@@ -24,8 +25,8 @@
 		public static function fadeOut(t:int = 36):void {
 			if(_tween != null && _tween.isPlaying) _tween.stop();
 			_shade.mouseEnabled = true;
+			_shade.visible = true;
 			_tween = new Tween(_shade, "alpha", None.easeIn, 0, 1, t);
-			//_tween.addEventListener(TweenEvent.MOTION_FINISH, finishHandler);
 		}
 		
 		private static function finishHandler(e:TweenEvent):void {

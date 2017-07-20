@@ -119,7 +119,7 @@
 				_world.backField.y = 0;
 			} else {
 				_world.backField.x = -Map.buildingIndex(gloc)*World.ROOM_WIDTH;
-				_world.backField.y = -Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
+				_world.backField.y = Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
 			}
 			
 			setButtonOf(gloc);
@@ -157,7 +157,7 @@
 				_world.backField.x = -int(_globalLocation)*World.CAVE_WIDTH;
 			} else {
 				_world.backField.x = -Map.buildingIndex(_globalLocation)*World.ROOM_WIDTH;
-				//_world.backField.y = Map.buildingFloor(_globalLocation)*World.ROOM_HEIGHT;
+				_world.backField.y = Map.buildingFloor(_globalLocation)*World.ROOM_HEIGHT;
 			}
 			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 				
@@ -269,7 +269,7 @@
 		
 		public function goto(gloc:String, spd:int):Boolean {
 			if(!isBuilding(gloc)){
-				if(_world.map.caveLength<=int(gloc)) return false;
+				if(_world.map.caveLength <= int(gloc)) return false;
 				else {
 					moveTo(gloc, spd);
 					return true;
@@ -279,10 +279,33 @@
 			}
 		}
 		
-		public function tpTo(gloc:String):void {
+		public function tpTo(gloc:String):Boolean {
+			if(!isValid(gloc)) return false;
+			
 			_world.renderField(gloc);
 			teleportTo(gloc);
 			_globalLocation = gloc;
+			return true;
+		}
+		
+		private function isValid(gloc:String):Boolean {
+			if(!isBuilding(gloc)){
+				if(gloc != String(int(gloc))) return false;
+				if(_world.map.caveLength <= int(gloc)) return false;
+			}
+			else if(isBuilding(gloc)) {
+				var flag1:Boolean = false, flag2:Boolean = false;
+				for(var i:int = 0; i < gloc.length; i++) {
+					if(gloc.charAt(i) == ":") flag1 = true;
+					if(gloc.charAt(i) == "-") flag2 = true;
+				}
+				if(!flag1 || !flag2) return false;
+				if(gloc != Map.buildingNum(gloc)+":"+Map.buildingFloor(gloc)+"-"+Map.buildingIndex(gloc)) return false;
+				if(_world.map.numBuildings <= Map.buildingNum(gloc)) return false;
+				else if(_world.map.buildingAt(Map.buildingNum(gloc)).buildingHeight <= Map.buildingFloor(gloc)) return false;
+				else if(_world.map.buildingAt(Map.buildingNum(gloc)).buildingWidth <= Map.buildingIndex(gloc)) return false;
+			}
+			return true;
 		}
 		
 		public function get currentLocation():String {

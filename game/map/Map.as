@@ -83,7 +83,7 @@
 			for(i = 0; i < gloc.length; i++){
 				if(gloc.charAt(i) == ":") start = i+1;
 				else if(gloc.charAt(i) == "-"){
-					floor = int(gloc.substr(start, i-1));
+					floor = int(gloc.substr(start, i-2));
 					break;
 				}
 			}

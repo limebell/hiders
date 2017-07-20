@@ -174,8 +174,9 @@
 					
 				case "teleportTo":
 					temp1 = t.substr(i+1, t.length-1);
-					Game.currentGame.mapManager.tpTo(temp1);
-					msg = temp1+"로 순간이동합니다.";
+					if(Game.currentGame.mapManager.tpTo(temp1)){
+						msg = temp1+"로 순간이동합니다.";
+					} else msg = temp1+"은 유효한 위치가 아닙니다.";
 					break;
 				
 				case "goto":

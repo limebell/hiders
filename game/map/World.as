@@ -12,7 +12,8 @@
 		CAVE_HEIGHT:int = 400,
 		ROOM_WIDTH:int = 500,
 		ROOM_HEIGHT:int = 300,
-		CHARACTER_FOOT_Y:int = 200,
+		CAVE_CHARACTER_Y:int = 200,
+		BUILDING_CHARACTER_Y:int = 130,
 		SIDE_BUTTON_WIDTH:int = 100,
 		SIDE_BUTTON_HEIGHT:int = 600,
 		UPDOWN_BUTTON_WIDTH:int = 800,
@@ -21,6 +22,7 @@
 		private var _character:Character;
 		private var _caves:Vector.<MovieClip>;
 		private var _buildings:Array;
+		private var _buildingFloors:Array;
 		private var _backField:MovieClip;
 		private var _objectsClip:MovieClip;
 		private var _mapObjects:Vector.<MapObjectInfo>;
@@ -80,6 +82,7 @@
 			}
 			
 			_buildings = new Array();
+			_buildingFloors = new Array();
 			for(i = 0; i < _map.numBuildings; i++){
 				_buildings[i] = new Array();
 				tb = _map.buildingAt(i);
@@ -108,7 +111,8 @@
 						}
 						
 						if(Map.isDownOpened(t)){
-							//_buildings[i][j][k].addChild(new room_downA_0);
+							if(j == 0 && tb.connectedRoom == k) _buildings[i][j][k].addChild(new room_downC_0);
+							//else _buildings[i][j][k].addChild(new room_downA_0);
 						} else {
 							_buildings[i][j][k].addChild(new room_downB_0);
 						}
@@ -122,15 +126,23 @@
 						_buildings[i][j][k].y = -j*ROOM_HEIGHT;
 					}
 				}
+				_buildingFloors[i] = new Array();
+				for(j = 0; j < tb.buildingWidth+4; j++){
+					switch(tb.floorAt(j)){
+						case 0:
+							_buildingFloors[i][j] = new building_floor_0();
+							break;
+					}
+					_buildingFloors[i][j].x = (j-2)*ROOM_WIDTH;
+					_buildingFloors[i][j].y = ROOM_HEIGHT/2;
+				}
 			}
 			
-			//initiating mapObject, and rendering backField and mapObjects
+			//initiating character, mapObject, and rendering backField and mapObjects
 			_backField = new MovieClip();
+			_objectsClip = new MovieClip();
 			renderField("0");
 			
-			//initiating character
-			_character.standStill();
-			_character.y = CHARACTER_FOOT_Y;
 			//initiating moveButtnos
 			_moveButtons.leftbtn = new button();
 			_moveButtons.rightbtn = new button();
@@ -174,9 +186,15 @@
 		}
 		
 		public function renderField(gloc:String):void {
-			//rendering backField			
+			//initiating character
+			_character.standStill();
+			if(buildingNum(gloc) == -1) _character.y = CAVE_CHARACTER_Y;
+			else _character.y = BUILDING_CHARACTER_Y;
+			
+			//rendering backField
 			var i:int, j:int, k:int, t:int, tb:Building;
-			for(i = 0; i < backField.numChildren; i++) backField.removeChildAt(0);
+			t = backField.numChildren;
+			for(i = 0; i < t; i++) backField.removeChildAt(0);
 			if(buildingNum(gloc) == -1){
 				for(i = 0; i < _map.caveLength; i++){
 					_backField.addChild(_caves[i]);
@@ -191,12 +209,15 @@
 						_buildings[i][j][k].visible = false;
 					}
 				}
+				for(j = 0; j < tb.buildingWidth+4; j++){
+					_backField.addChild(_buildingFloors[i][j]);
+					_buildingFloors[i][j].visible = false;
+				}
 			}
 			
 			//rendering mapObjects
-			if(_objectsClip != null) this.removeChild(_objectsClip);
+			for(i = 0; i < _objectsClip.numChildren; i++) _objectsClip.removeChildAt(0);
 			_mapObjects = new Vector.<MapObjectInfo>();
-			_objectsClip = new MovieClip();
 			for each(var object:MapObjectInfo in _mapObjects){
 				if(object.clip != null){
 					_objectsClip.addChild(object.clip);
@@ -217,7 +238,7 @@
 					Game.currentGame.mapManager.dispatchEvent(new MapEvent(MapEvent.MOVE_UP));
 					break;
 				case _moveButtons.downbtn:
-					trace("down");
+					Game.currentGame.mapManager.dispatchEvent(new MapEvent(MapEvent.MOVE_DOWN));
 					break;
 			}
 		}
@@ -258,6 +279,10 @@
 		
 		public function get buildings():Array {
 			return _buildings;
+		}
+		
+		public function get buildingFloors():Array {
+			return _buildingFloors;
 		}
 		
 		public function get backField():MovieClip {

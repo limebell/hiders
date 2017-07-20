@@ -1,33 +1,30 @@
 ﻿package game.db {
 	
 	public class SkillDB {
-		public static const
-		TEMPSKILL:String = "TempSkill",
-		TEMPSKILL2:String = "TempSkill2";
 		
-		private static var skills:Object;
+		private static var skills:Vector.<SkillData>;
 
 		{
-			skills = new Object();
+			skills = new Vector.<SkillData>();
 			
-			addSkill("TempSkill", "임시 스킬",
+			addSkill(0, "강인한 체력",
+						"최대 체력이 10퍼센트 증가합니다.");
+			
+			addSkill(1, "임시 스킬",
 						"임시로 존재하는 스킬, 효과는 없습니다.");
-			
-			addSkill("TempSkill2", "임시 스킬2",
-						"임시로 존재하는 스킬 두 번째, 효과는 없습니다.");
 		}
 		
-		private static function addSkill(identifier:String, skillName:String, description:String):void {
+		private static function addSkill(skillCode:int, skillName:String, description:String):void {
 			var data:SkillData = new SkillData();
-			data._identifier = identifier;
-			data._name = skillName;
+			data._skillCode = skillCode;
+			data._skillName = skillName;
 			data._description = description;
 			
-			skills[identifier] = data;
+			skills[skillCode] = data;
 		}
 		
-		public static function getSkill(identifier:String):SkillData {
-			return skills[identifier];
+		public static function getSkill(skillCode:int):SkillData {
+			return skills[skillCode];
 		}
 
 	}

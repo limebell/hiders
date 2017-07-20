@@ -6,8 +6,13 @@
 	import game.map.World;
 	import game.event.MapEvent;
 	import fl.transitions.TweenEvent;
+	import game.map.Map;
+	import game.ui.Shade;
 	
 	public class MapManager extends EventDispatcher {
+		private const
+		SPD_HOR:int = 10;
+		
 		private var _world:World;
 		private var _globalLocation:String;
 		private var _tween:Tween;
@@ -18,6 +23,7 @@
 			_globalLocation = "0";
 			this.addEventListener(MapEvent.MOVE_LEFT, moveLeftHandler);
 			this.addEventListener(MapEvent.MOVE_RIGHT, moveRightHandler);
+			this.addEventListener(MapEvent.MOVE_UP, moveUpHandler);
 			setButtonOf(_globalLocation);
 			redrawFromTo();
 		}
@@ -25,24 +31,57 @@
 		private function moveLeftHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
 			_world.character.goLeft();
-			Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
-			moveTo(String(int(_globalLocation)-1), 10);
+			
+			if(!isBuilding(_globalLocation)){
+				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
+				moveTo(String(int(_globalLocation)-1), SPD_HOR);
+			}
+			else {
+				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 1);
+				for(var i:int = 0; i < _globalLocation.length; i++) if(_globalLocation.charAt(i) == "-") break;
+				moveTo(_globalLocation.substr(0, i+1)+(Map.buildingIndex(_globalLocation)-1), SPD_HOR);
+			}
 		}
 		
 		private function moveRightHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
 			_world.character.goRight();
-			Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
-			moveTo(String(int(_globalLocation)+1), 10);
+			
+			if(!isBuilding(_globalLocation)){
+				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
+				moveTo(String(int(_globalLocation)+1), SPD_HOR);
+			}
+			else{
+				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 1);
+				for(var i:int = 0; i < _globalLocation.length; i++) if(_globalLocation.charAt(i) == "-") break;
+				moveTo(_globalLocation.substr(0, i+1)+(Map.buildingIndex(_globalLocation)+1), SPD_HOR);
+			}
 		}
 		
-		private function moveTo(gloc:String, spd:int):void {
+		private function moveUpHandler(e:MapEvent):void {
+			if(_tween != null && _tween.isPlaying) return;
+			if(!isBuilding(_globalLocation)){
+				_world.character.climb();
+				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
+				_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y+World.CAVE_HEIGHT, 60);
+				Shade.fadeOut(60);
+				_tween.addEventListener(TweenEvent.MOTION_FINISH, enterBuilding);
+			}
+		}
+		
+		private function moveTo(gloc:String, spd:int, vertical:Boolean = false):void {
 			//버튼 컨트롤
 			_world.setButton();
 			//장거리 이동도 가능하도록 수정하고 싶음, 뭔가 gloc이 바뀔때마다 이벤트가 발생해서 새로그리도록?
+			if(_tween != null && _tween.isPlaying) _tween.stop();
 			if(!isBuilding(_globalLocation)){
-				if(_tween != null && _tween.isPlaying) _tween.stop();
-				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.BLOCK_LENGTH, Math.abs((int(gloc)*World.BLOCK_LENGTH+_world.backField.x))/Number(spd));
+				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.CAVE_WIDTH, Math.abs((int(gloc)*World.CAVE_WIDTH+_world.backField.x))/Number(spd));
+			} else {
+				if(vertical){
+					_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, Map.buildingFloor(gloc)*World.ROOM_HEIGHT, Math.abs(Map.buildingIndex(gloc)*World.ROOM_WIDTH-_world.backField.x)/Number(spd));
+				} else {
+					_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -Map.buildingIndex(gloc)*World.ROOM_WIDTH, Math.abs(Map.buildingIndex(gloc)*World.ROOM_WIDTH+_world.backField.x)/Number(spd));
+				}
 			}
 			
 			_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
@@ -54,36 +93,75 @@
 			_globalLocation = gloc;
 		}
 		
-		private function tweenFinishHandler(e:TweenEvent):void {
-			_world.character.standStill();
-			_world.backField.x = -int(_globalLocation)*World.BLOCK_LENGTH;
-			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
+		private function teleportTo(gloc){
+			if(!isBuilding(gloc))
+				_world.backField.x = -int(gloc)*World.CAVE_WIDTH;
+			else {
+				_world.backField.x = -Map.buildingIndex(gloc)*World.ROOM_WIDTH;
+				_world.backField.y = -Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
+			}
+			
+			setButtonOf(gloc);
+			_globalLocation = gloc;
+			redrawFromTo();
 		}
 		
-		private function setButtonOf(gloc:String):void {
-			if(!isBuilding(gloc)){
-				switch(_world.map.caveAt(int(gloc)).x){
-					case 0:
-						_world.setButton(true, true);
-						break;
-					case 1:
-						_world.setButton(false, true);
-						break;
-					case 2:
-						_world.setButton(true, false);
-						break;
+		private function enterBuilding(e:TweenEvent):void {
+			_tween.removeEventListener(TweenEvent.MOTION_FINISH, enterBuilding);
+			_world.character.standStill();
+			Shade.fadeIn(60);
+			var i:int;
+			for(i = 0; i < _world.map.numBuildings; i++){
+				if(_world.map.buildingAt(i).connectedCave == int(_globalLocation)){
+					_globalLocation = i+":"+0+"-"+_world.map.buildingAt(i).connectedRoom;
+					_world.renderField(_globalLocation);
+					teleportTo(_globalLocation);
+					break;
 				}
 			}
 		}
 		
+		private function tweenFinishHandler(e:TweenEvent):void {
+			_world.character.standStill();
+			if(!isBuilding(_globalLocation)){
+				_world.backField.x = -int(_globalLocation)*World.CAVE_WIDTH;
+			} else {
+				_world.backField.x = -Map.buildingIndex(_globalLocation)*World.ROOM_WIDTH;
+				//_world.backField.y = Map.buildingIndex(_globalLocation)*World.ROOM_HEIGHT;
+			}
+			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
+				
+		}
+		
+		private function setButtonOf(gloc:String):void {
+			var t:int;
+			if(!isBuilding(gloc)){
+				t = _world.map.caveAt(int(gloc)).x;
+			} else {
+				t = _world.map.buildingAt(Map.buildingNum(gloc)).roomAt(Map.buildingFloor(gloc), Map.buildingIndex(gloc)).x;
+			}
+			
+			_world.setButton(Map.isLeftOpened(t), Map.isRightOpened(t), Map.isUpOpened(t), Map.isDownOpened(t));
+		}
+		
 		private function redrawFromTo(from:String = "$", to:String = "$"):void {
 			var _from:String = (from=="$"?_globalLocation:from), _to:String = (to=="$"?_globalLocation:to);
+			var i:int, j:int;
 			if(!isBuilding(_globalLocation)){
-				for(var i:int = 0; i < _world.map.caveLength; i++){
+				for(i = 0; i < _world.map.caveLength; i++){
 					if(isCaveInRange(i, _from, _to))
 						_world.caves[i].visible = true;
 					else
 						_world.caves[i].visible = false;
+				}
+			} else {
+				for(i = 0; i < _world.map.buildingAt(Map.buildingNum(_globalLocation)).buildingHeight; i++){
+					for(j = 0; j < _world.map.buildingAt(Map.buildingNum(_globalLocation)).buildingWidth; j++){
+						if(isRoomInRange(i, j, _from, to))
+							_world.buildings[Map.buildingNum(_globalLocation)][i][j].visible = true;
+						else
+							_world.buildings[Map.buildingNum(_globalLocation)][i][j].visible = false;
+					}
 				}
 			}
 			
@@ -108,8 +186,27 @@
 			return (i>_small-2&&i<_large+2);
 		}
 		
+		private function isRoomInRange(i:int ,j:int, from:String, to:String):Boolean {
+			var _smallX:int, _largeX:int, _smallY:int, _largeY:int;
+			if(Map.buildingFloor(from)>Map.buildingFloor(to)){
+				_smallX = Map.buildingFloor(to);
+				_largeX = Map.buildingFloor(from);
+			} else {
+				_smallX = Map.buildingFloor(from);
+				_largeX = Map.buildingFloor(to);
+			}
+			if(Map.buildingIndex(from)>Map.buildingIndex(to)){
+				_smallY = Map.buildingIndex(to);
+				_largeY = Map.buildingIndex(from);
+			} else {
+				_smallY = Map.buildingIndex(from);
+				_largeY = Map.buildingIndex(to);
+			}
+			return (i>_smallX-2&&i<_largeX+2&&j>_smallY-2&&j<_largeY+2);
+		}
+		
 		private function isBuilding(gloc:String):Boolean {
-			var flag = false;
+			var flag:Boolean = false;
 			for(var i:int = 0; i < gloc.length; i++){
 				if(gloc.charAt(i) == ":"){
 					flag = true;

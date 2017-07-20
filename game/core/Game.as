@@ -10,6 +10,7 @@
 	import game.ui.ConsoleUI;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
+	import game.ui.Shade;
 	
 	public class Game extends EventDispatcher {
 		private static const NO_DATA:int = -1;
@@ -81,6 +82,14 @@
 			_display.addChild(_world);
 			_display.addChild(_ui);
 			_display.addChild(_console);
+			
+			Shade.fadeIn();
+		}
+		
+		private function endGame():void {
+			_display.removeChild(_world);
+			_display.removeChild(_ui);
+			_display.removeChild(_console);
 		}
 		
 		public function setMouse(state:String):void {

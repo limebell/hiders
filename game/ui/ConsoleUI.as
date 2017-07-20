@@ -2,9 +2,12 @@
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
-	import game.db.FontDB;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
+	//import flash.text.AntiAliasType;
+	//import flash.text.GridFitType;
+	
+	import game.db.FontDB;
 	import game.core.Game;
 	import game.core.StatusManager;
 	
@@ -19,7 +22,7 @@
 			_clip = new consoleUIClip();
 			
 			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0xffffff);
-			_msgFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0x666666);
+			_msgFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0x666666, null, true);
 			
 			_outputText = new TextField();
 			_inputText = new TextField();
@@ -28,6 +31,9 @@
 			_inputText.multiline = false;
 			_inputText.type = "input";
 			_outputText.selectable = true;
+			_outputText.wordWrap = true;
+			//_outputText.antiAliasType = _inputText.antiAliasType = AntiAliasType.ADVANCED;
+			//_outputText.gridFitType = _inputText.gridFitType = GridFitType.SUBPIXEL;
 			
 			_inputText.restrict = "^`";
 			
@@ -66,7 +72,7 @@
 			
 			switch(script){
 				case "help":
-					msg = "currentLocation@\ncaveLength@\n"+
+					msg = "currentLocation@\ncaveLength@\nstatus@\n"+
 							"add@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)"
 					break;
 				
@@ -76,6 +82,10 @@
 				
 				case "caveLength":
 					msg = "동굴의 길이는 "+Game.currentGame.mapManager.caveLength+"입니다.";
+					break;
+				
+				case "status":
+					msg = Game.currentGame.statusManager.status;
 					break;
 				
 				case "add":

@@ -1,4 +1,8 @@
-﻿package game.ui {
+﻿package game.ui {	
+	import game.db.FontDB;
+	import game.core.Game;
+	import game.core.StatusManager;
+	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
@@ -6,10 +10,6 @@
 	import flash.ui.Keyboard;
 	//import flash.text.AntiAliasType;
 	//import flash.text.GridFitType;
-	
-	import game.db.FontDB;
-	import game.core.Game;
-	import game.core.StatusManager;
 	
 	public class ConsoleUI extends MovieClip {
 		private var _clip:MovieClip;
@@ -173,6 +173,10 @@
 					break;
 					
 				case "teleportTo":
+					temp1 = t.substr(i+1, t.length-1);
+					if(Game.currentGame.mapManager.tpTo(temp1)){
+						msg = temp1+"로 순간이동합니다.";
+					} else msg = temp1+"은 유효한 위치가 아닙니다.";
 					break;
 				
 				case "goto":

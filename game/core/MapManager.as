@@ -24,6 +24,7 @@
 			this.addEventListener(MapEvent.MOVE_LEFT, moveLeftHandler);
 			this.addEventListener(MapEvent.MOVE_RIGHT, moveRightHandler);
 			this.addEventListener(MapEvent.MOVE_UP, moveUpHandler);
+			this.addEventListener(MapEvent.MOVE_DOWN, moveDownHandler);
 			setButtonOf(_globalLocation);
 			redrawFromTo();
 		}
@@ -69,6 +70,25 @@
 			}
 		}
 		
+		private function moveDownHandler(e:MapEvent):void {
+			if(_tween != null && _tween.isPlaying) return;
+			if(!isBuilding(_globalLocation)){
+				
+			} else {
+				if(Map.buildingIndex(_globalLocation) == _world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedRoom){
+					_world.character.climb();
+					Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
+					_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y-World.CAVE_HEIGHT, 60);
+					Shade.fadeOut(60);
+					_tween.addEventListener(TweenEvent.MOTION_FINISH, leaveBuilding);
+				} else {
+					
+				}
+				
+				
+			}
+		}
+		
 		private function moveTo(gloc:String, spd:int, vertical:Boolean = false):void {
 			//버튼 컨트롤
 			_world.setButton();
@@ -94,11 +114,12 @@
 		}
 		
 		private function teleportTo(gloc){
-			if(!isBuilding(gloc))
+			if(!isBuilding(gloc)){
 				_world.backField.x = -int(gloc)*World.CAVE_WIDTH;
-			else {
+				_world.backField.y = 0;
+			} else {
 				_world.backField.x = -Map.buildingIndex(gloc)*World.ROOM_WIDTH;
-				_world.backField.y = -Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
+				_world.backField.y = Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
 			}
 			
 			setButtonOf(gloc);
@@ -121,13 +142,22 @@
 			}
 		}
 		
+		private function leaveBuilding(e:TweenEvent):void {
+			_tween.removeEventListener(TweenEvent.MOTION_FINISH, leaveBuilding);
+			_world.character.standStill();
+			Shade.fadeIn(60);
+			_globalLocation = String(_world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedCave);
+			_world.renderField(_globalLocation);
+			teleportTo(_globalLocation);
+		}
+		
 		private function tweenFinishHandler(e:TweenEvent):void {
 			_world.character.standStill();
 			if(!isBuilding(_globalLocation)){
 				_world.backField.x = -int(_globalLocation)*World.CAVE_WIDTH;
 			} else {
 				_world.backField.x = -Map.buildingIndex(_globalLocation)*World.ROOM_WIDTH;
-				//_world.backField.y = Map.buildingIndex(_globalLocation)*World.ROOM_HEIGHT;
+				_world.backField.y = Map.buildingFloor(_globalLocation)*World.ROOM_HEIGHT;
 			}
 			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 				
@@ -161,6 +191,15 @@
 							_world.buildings[Map.buildingNum(_globalLocation)][i][j].visible = true;
 						else
 							_world.buildings[Map.buildingNum(_globalLocation)][i][j].visible = false;
+					}
+				}
+				
+				if(Map.buildingFloor(_from) > Map.buildingFloor(_to)) j = Map.buildingFloor(_to);
+				else j = Map.buildingFloor(_from);
+				if(j < 2){
+					for(i = 0; i < _world.map.buildingAt(Map.buildingNum(_globalLocation)).buildingWidth+4; i++){
+						if(isFloorInRange(i, Map.buildingIndex(_from), Map.buildingIndex(_to))) _world.buildingFloors[Map.buildingNum(_globalLocation)][i].visible = true;
+						else _world.buildingFloors[Map.buildingNum(_globalLocation)][i].visible = false;
 					}
 				}
 			}
@@ -205,6 +244,18 @@
 			return (i>_smallX-2&&i<_largeX+2&&j>_smallY-2&&j<_largeY+2);
 		}
 		
+		private function isFloorInRange(i:int, from:int, to:int):Boolean {
+			var _small:int, _large:int;
+			if(from>to){
+				_small = to;
+				_large = from;
+			} else {
+				_small = from;
+				_large = to;
+			}
+			return (i>_small-1&&i<_large+5);
+		}
+		
 		private function isBuilding(gloc:String):Boolean {
 			var flag:Boolean = false;
 			for(var i:int = 0; i < gloc.length; i++){
@@ -218,7 +269,7 @@
 		
 		public function goto(gloc:String, spd:int):Boolean {
 			if(!isBuilding(gloc)){
-				if(_world.map.caveLength<=int(gloc)) return false;
+				if(_world.map.caveLength <= int(gloc)) return false;
 				else {
 					moveTo(gloc, spd);
 					return true;
@@ -226,6 +277,35 @@
 			} else {
 				return false;
 			}
+		}
+		
+		public function tpTo(gloc:String):Boolean {
+			if(!isValid(gloc)) return false;
+			
+			_world.renderField(gloc);
+			teleportTo(gloc);
+			_globalLocation = gloc;
+			return true;
+		}
+		
+		private function isValid(gloc:String):Boolean {
+			if(!isBuilding(gloc)){
+				if(gloc != String(int(gloc))) return false;
+				if(_world.map.caveLength <= int(gloc)) return false;
+			}
+			else if(isBuilding(gloc)) {
+				var flag1:Boolean = false, flag2:Boolean = false;
+				for(var i:int = 0; i < gloc.length; i++) {
+					if(gloc.charAt(i) == ":") flag1 = true;
+					if(gloc.charAt(i) == "-") flag2 = true;
+				}
+				if(!flag1 || !flag2) return false;
+				if(gloc != Map.buildingNum(gloc)+":"+Map.buildingFloor(gloc)+"-"+Map.buildingIndex(gloc)) return false;
+				if(_world.map.numBuildings <= Map.buildingNum(gloc)) return false;
+				else if(_world.map.buildingAt(Map.buildingNum(gloc)).buildingHeight <= Map.buildingFloor(gloc)) return false;
+				else if(_world.map.buildingAt(Map.buildingNum(gloc)).buildingWidth <= Map.buildingIndex(gloc)) return false;
+			}
+			return true;
 		}
 		
 		public function get currentLocation():String {

@@ -105,14 +105,14 @@
 						}
 						
 						if(Map.isUpOpened(t)){
-							//_buildings[i][j][k].addChild(new room_upA_0);
+							_buildings[i][j][k].addChild(new room_upA_0);
 						} else {
 							_buildings[i][j][k].addChild(new room_upB_0);
 						}
 						
 						if(Map.isDownOpened(t)){
 							if(j == 0 && tb.connectedRoom == k) _buildings[i][j][k].addChild(new room_downC_0);
-							//else _buildings[i][j][k].addChild(new room_downA_0);
+							else _buildings[i][j][k].addChild(new room_downA_0);
 						} else {
 							_buildings[i][j][k].addChild(new room_downB_0);
 						}
@@ -130,7 +130,8 @@
 				for(j = 0; j < tb.buildingWidth+4; j++){
 					switch(tb.floorAt(j)){
 						case 0:
-							_buildingFloors[i][j] = new building_floor_0();
+							if(j-2 != tb.connectedRoom) _buildingFloors[i][j] = new building_floor_0();
+							else _buildingFloors[i][j] = new building_floorToCave_0();
 							break;
 					}
 					_buildingFloors[i][j].x = (j-2)*ROOM_WIDTH;

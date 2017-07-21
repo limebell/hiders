@@ -54,8 +54,7 @@
 			}
 			else{
 				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 1);
-				for(var i:int = 0; i < _globalLocation.length; i++) if(_globalLocation.charAt(i) == "-") break;
-				moveTo(_globalLocation.substr(0, i+1)+(Map.buildingIndex(_globalLocation)+1), SPD_HOR);
+				moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation))+"-"+(Map.buildingIndex(_globalLocation)+1), SPD_HOR);
 			}
 		}
 		
@@ -67,6 +66,10 @@
 				_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y+World.CAVE_HEIGHT, 60);
 				Shade.fadeOut(60);
 				_tween.addEventListener(TweenEvent.MOTION_FINISH, enterBuilding);
+			} else {
+				_world.character.goRight();
+				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
+				moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation)+1)+"-"+(Map.buildingIndex(_globalLocation)), SPD_HOR, true);
 			}
 		}
 		
@@ -75,14 +78,16 @@
 			if(!isBuilding(_globalLocation)){
 				
 			} else {
-				if(Map.buildingIndex(_globalLocation) == _world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedRoom){
+				if(Map.buildingFloor(_globalLocation) == 0 && Map.buildingIndex(_globalLocation) == _world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedRoom){
 					_world.character.climb();
 					Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
 					_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y-World.CAVE_HEIGHT, 60);
 					Shade.fadeOut(60);
 					_tween.addEventListener(TweenEvent.MOTION_FINISH, leaveBuilding);
 				} else {
-					
+					_world.character.goLeft();
+					Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
+					moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation)-1)+"-"+(Map.buildingIndex(_globalLocation)), SPD_HOR, true);
 				}
 				
 				
@@ -95,16 +100,53 @@
 			//장거리 이동도 가능하도록 수정하고 싶음, 뭔가 gloc이 바뀔때마다 이벤트가 발생해서 새로그리도록?
 			if(_tween != null && _tween.isPlaying) _tween.stop();
 			if(!isBuilding(_globalLocation)){
+				//동굴 내에서 좌우로 움직이는 트윈
 				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.CAVE_WIDTH, Math.abs((int(gloc)*World.CAVE_WIDTH+_world.backField.x))/Number(spd));
+				_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 			} else {
 				if(vertical){
-					_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, Map.buildingFloor(gloc)*World.ROOM_HEIGHT, Math.abs(Map.buildingIndex(gloc)*World.ROOM_WIDTH-_world.backField.x)/Number(spd));
+					if(Map.buildingFloor(gloc)>Map.buildingFloor(_globalLocation)){
+						_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+150, 150/spd);
+						_tween.addEventListener(TweenEvent.MOTION_FINISH, _goUp);
+						function _goUp(e:TweenEvent):void {
+							//빌딩 내에서 위로 올라가는 트윈
+							_world.character.goLeft();
+							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goUp);
+							new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-300, 450/spd);
+							_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y+World.ROOM_HEIGHT, 450/spd);
+							_tween.addEventListener(TweenEvent.MOTION_FINISH, _goRight);
+						}
+						function _goRight(e:TweenEvent):void {
+							_world.character.goRight();
+							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goRight);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+150, 150/spd);
+							_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
+						}
+					} else {
+						//빌딩 내에서 아래로 내려오는 트윈
+						_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-150, 150/spd);
+						_tween.addEventListener(TweenEvent.MOTION_FINISH, _goDown);
+						function _goDown(e:TweenEvent):void {
+							_world.character.goRight();
+							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goDown);
+							new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+300, 450/spd);
+							_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y-World.ROOM_HEIGHT, 450/spd);
+							_tween.addEventListener(TweenEvent.MOTION_FINISH, _goLeft);
+						}
+						function _goLeft(e:TweenEvent):void {
+							_world.character.goLeft();
+							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goLeft);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-150, 150/spd);
+							_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
+						}
+					}
 				} else {
+					//빌딩 내에서 좌우로 움직이는 트윈
 					_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -Map.buildingIndex(gloc)*World.ROOM_WIDTH, Math.abs(Map.buildingIndex(gloc)*World.ROOM_WIDTH+_world.backField.x)/Number(spd));
+					_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 				}
 			}
 			
-			_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 			
 			//임시
 			setButtonOf(gloc);

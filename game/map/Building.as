@@ -14,7 +14,7 @@
 			_buildingWidth = width;
 			_buildingHeight = height;
 			_connectedCave = cave;
-			_connectedRoom = 0;
+			_connectedRoom = 3;
 			
 			randomize();
 		}
@@ -28,9 +28,12 @@
 					_building[i][j] = newRoom(true, true, false, false);
 				}
 				_building[i][0] = newRoom(false, true, false, false);
+				_building[i][1] = newRoom(true, true, true, true);
 				_building[i][j-1] = newRoom(true, false, false, false);
 			}
 			_building[0][_connectedRoom] = roomToCave(_building[0][_connectedRoom]);
+			_building[0][1] = newRoom(true, true, true, false);
+			_building[_buildingHeight-1][1] = newRoom(true, true, false, true);
 			
 			_buildingFloors = new Vector.<int>();
 			for(i = 0; i < _buildingWidth+4; i++){

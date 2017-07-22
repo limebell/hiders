@@ -1,5 +1,7 @@
 ﻿package game.map {
 	import flash.geom.Point;
+	import game.db.MapObjectData;
+	import game.db.MapObjectDB;
 	
 	public class Map {
 		private const
@@ -9,10 +11,17 @@
 		private var _cave:Vector.<Point>;
 		private var _buildings:Vector.<Building>;
 		private var _caveLength:int;
+		private var _mapObjects:Vector.<MapObjectInfo>;
 
 		public function Map() {
 			_cave = new Vector.<Point>();
 			_buildings = new Vector.<Building>();
+			
+			var objectRock:MapObjectData = MapObjectDB.getObject(1);			
+			var rockInfo:MapObjectInfo = new MapObjectInfo(objectRock, "1", new Point(640, 360), true, true);
+			
+			_mapObjects = new Vector.<MapObjectInfo>();
+			_mapObjects.push(rockInfo);
 			
 			randomizeMap();
 		}
@@ -45,6 +54,14 @@
 		
 		public function get numBuildings():int {
 			return _buildings.length;
+		}
+		
+		public function get numObjects():int {
+			return _mapObjects.length;
+		}
+		
+		public function objectAt(index:int):MapObjectInfo {
+			return _mapObjects[index];
 		}
 		
 		public function buildingAt(index:int):Building {

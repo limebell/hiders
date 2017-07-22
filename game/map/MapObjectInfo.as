@@ -5,7 +5,19 @@
 	
 	public class MapObjectInfo {
 		
-		internal var _data:MapObjectData, _globalLocation:String, _localLocation:Point, _isExisting:Boolean;
+		private var _data:MapObjectData, _globalLocation:String, _localLocation:Point, _isExisting:Boolean, _isFront:Boolean;
+		
+		public function MapObjectInfo(data:MapObjectData, globalLocation:String, localLocation:Point, isExisting:Boolean, isFront:Boolean) {
+			_data = data;
+			_globalLocation = globalLocation;
+			_localLocation = localLocation;
+			_isExisting = isExisting;
+			_isFront = isFront;
+		}
+		
+		public function set objectCode(objCode:int):void {
+			
+		}
 		
 		public function get objectCode():int {
 			return _data.objectCode;
@@ -29,6 +41,10 @@
 		
 		public function get isExisting():Boolean {
 			return _isExisting;
+		}
+		
+		public function get isFront():Boolean {
+			return _isFront;
 		}
 		
 		public function isNear(target:String):Boolean {

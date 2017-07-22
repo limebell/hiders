@@ -3,9 +3,9 @@
 	
 	public class ItemData {
 
-		internal var _itemCode:String, _itemName:String, _description:String, _itemClass:String, _durability:int, _weight:int, _clip:MovieClip;
+		internal var _itemCode:int, _itemName:String, _description:String, _itemClass:String, _durability:int, _weight:int, _clip:MovieClip;
 		
-		public function get itemCode():String {
+		public function get itemCode():int {
 			return _itemCode;
 		}
 		
@@ -22,7 +22,7 @@
 		}
 		
 		public function get durability():int {
-			return _int;
+			return _durability;
 		}
 		
 		public function get weight():int {

@@ -25,7 +25,7 @@
 		private var _buildingFloors:Array;
 		private var _backField:MovieClip;
 		private var _objectsClip:MovieClip;
-		private var _mapObjects:Vector.<MapObjectInfo>;
+		private var _mapObjects:Vector.<MovieClip>;
 		private var _frontField:MovieClip;
 		private var _moveButtons:MovieClip;
 		private var _map:Map;
@@ -193,9 +193,9 @@
 			else _character.y = BUILDING_CHARACTER_Y;
 			
 			//rendering backField
-			var i:int, j:int, k:int, t:int, tb:Building;
-			t = backField.numChildren;
-			for(i = 0; i < t; i++) backField.removeChildAt(0);
+			var i:int, j:int, k:int, tb:Building;
+			
+			for(i = backField.numChildren; i > 0; i--) backField.removeChildAt(0);
 			if(buildingNum(gloc) == -1){
 				for(i = 0; i < _map.caveLength; i++){
 					_backField.addChild(_caves[i]);
@@ -217,12 +217,13 @@
 			}
 			
 			//rendering mapObjects
-			for(i = 0; i < _objectsClip.numChildren; i++) _objectsClip.removeChildAt(0);
-			_mapObjects = new Vector.<MapObjectInfo>();
-			for each(var object:MapObjectInfo in _mapObjects){
+			for(i = _objectsClip.numChildren; i > 0; i++) _objectsClip.removeChildAt(0);
+			
+			_mapObjects = new Vector.<MovieClip>();
+			for each(var object:MovieClip in _mapObjects){
 				if(object.clip != null){
-					_objectsClip.addChild(object.clip);
-					object.clip.visible = false;
+					_objectsClip.addChild(object);
+					object.visible = true;
 				}
 			}
 		}
@@ -294,7 +295,7 @@
 			return objectsClip;
 		}
 		
-		public function get mapObjects():Vector.<MapObjectInfo> {
+		public function get mapObjects():Vector.<MovieClip> {
 			return _mapObjects;
 		}
 		

@@ -1,9 +1,10 @@
 ﻿package game.db {
 	import flash.display.MovieClip;
+	import flash.utils.getDefinitionByName;
 	
 	public class CharacterData {
 		
-		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _skill:SkillData, _clip:MovieClip, _portrait:MovieClip;
+		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _skill:SkillData, _clip:String;
 
 		public function get charName():String {
 			return _name;
@@ -34,11 +35,7 @@
 		}
 		
 		public function get clip():MovieClip {
-			return _clip;
-		}
-		
-		public function get portrait():MovieClip {
-			return _portrait;
+			return new (Class(getDefinitionByName(_clip)))();
 		}
 
 	}

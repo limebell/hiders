@@ -109,7 +109,7 @@
 			
 			if(_portrait != null) _portraitField.removeChild(_portrait);
 			
-			_portrait = _character.portrait;
+			_portrait = _character.clip;
 			_portraitField.addChild(_portrait);
 			_portrait.gotoAndStop("portrait");
 			_portrait.y = -210;

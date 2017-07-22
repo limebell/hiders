@@ -2,23 +2,26 @@
 	import game.db.FontDB;
 	import game.core.Game;
 	import game.core.StatusManager;
+	import game.db.ItemDB;
 	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
+
 	//import flash.text.AntiAliasType;
 	//import flash.text.GridFitType;
 	
-	public class ConsoleUI extends MovieClip {
+	public class Console extends MovieClip {
 		private var _clip:MovieClip;
 		private var _outputText:TextField;
 		private var _inputText:TextField;
 		private var _textFormat:TextFormat;
 		private var _msgFormat:TextFormat;
+		private var _prevMessage:String;
 
-		public function ConsoleUI() {
+		public function Console() {
 			_clip = new consoleUIClip();
 			
 			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0xffffff);
@@ -42,7 +45,7 @@
 			
 			_outputText.x = _inputText.x = -450;
 			_outputText.y = -255;
-			_inputText.y = 205;
+			_inputText.y = 215;
 			
 			this.addChild(_clip);
 			this.addChild(_outputText);
@@ -51,10 +54,16 @@
 		
 		private function keydownHandler(e:KeyboardEvent):void {
 			if(e.keyCode == Keyboard.ENTER) push(_inputText.text);
+			else if(e.keyCode == Keyboard.UP) getLastMessage();
+		}
+		
+		public function getLastMessage():void {
+			if(_prevMessage != null) _inputText.text = _prevMessage;
 		}
 		
 		private function push(t:String):void {
 			if(t == "") return;
+			_prevMessage = t;
 			_outputText.appendText(t+"\n");
 			_inputText.text = "";
 			analyze(t);
@@ -73,7 +82,8 @@
 			switch(script){
 				case "help":
 					msg = "currentLocation@\ncaveLength@\nstatus@\n"+
-							"add@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)"
+							"add@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)\n"+
+							"addItem@itemCode(int),amount(int)";
 					break;
 				
 				case "currentLocation":
@@ -144,7 +154,7 @@
 					else {
 						temp2 = t.substr(loc+1, t.length-1);
 						if(temp2 == null) msg = "명령어의 형식이 잘못되었습니다. add는 두 개의 인수 target(string)과 amount(int)가 필요합니다.";
-						else if(temp2 != String(int(temp2))) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 양의 숫자가 들어가야 합니다.";
+						else if(temp2 != String(int(temp2))) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 숫자가 들어가야 합니다.";
 						else if((int(temp2)) <= 0) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 0보다 큰 숫자가 들어가야 합니다.";
 						else {
 							switch(temp1){
@@ -192,9 +202,9 @@
 					if(!flag) msg = "명령어의 형식이 잘못되었습니다. goto는 두 개의 인수 gloc(string)과 spd(int)가 필요합니다.";
 					else {
 						temp2 = t.substr(loc+1, t.length-1);
-						if(temp2 == null) msg = "명령어의 형식이 잘못되었습니다. add는 두 개의 인수 target(string)과 amount(int)가 필요합니다.";
-						else if(temp2 != String(int(temp2))) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 양의 숫자가 들어가야 합니다.";
-						else if((int(temp2)) <= 0) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 0보다 큰 숫자가 들어가야 합니다.";
+						if(temp2 == null) msg = "명령어의 형식이 잘못되었습니다. goto는 두 개의 인수 gloc(string)과 spd(int)가 필요합니다.";
+						else if(temp2 != String(int(temp2))) msg = "명령어의 형식이 잘못되었습니다. spd(int)에는 숫자가 들어가야 합니다.";
+						else if((int(temp2)) <= 0) msg = "명령어의 형식이 잘못되었습니다. spd(int)에는 0보다 큰 숫자가 들어가야 합니다.";
 						else {
 							//temp1이 빌딩인가 검사해야함...
 							//msg = "명령어의 형식이 잘못되었습니다. gloc(stinrg)의 형식은 \"(buildingNo)\"혹은, \"(buildingNo):(floor)-(roomIndex)\"입니다.";
@@ -213,8 +223,33 @@
 							} else msg = "아직 빌딩은 구현되지 않았습니다.";
 						}
 					}
-					
 					break;
+					
+				case "addItem":
+					flag = false;
+					for(i = loc+1; i < t.length; i++){
+						if(t.charAt(i) == ","){
+							temp1 = t.substr(loc+1, i-loc-1);
+							loc = i;
+							flag = true;
+							break;
+						}
+					}
+					if(!flag) msg = "명령어의 형식이 잘못되었습니다. addItem은 두 개의 인수 itemCode(int)과 amount(int)가 필요합니다.";
+					else if(temp1 != String(int(temp1))) msg = "명령어의 형식이 잘못되었습니다. itemCode(int)에는 숫자가 들어가야 합니다.";
+					else if(int(temp1) >= ItemDB.getNumItems()) msg = "명령어의 형식이 잘못되었습니다. itemCode(int)는 유효한 범위가 아닙니다.";
+					else {
+						temp2 = t.substr(loc+1, t.length-1);
+						if(temp2 == null) msg = "명령어의 형식이 잘못되었습니다. addItem은 두 개의 인수 itemCode(int)과 amount(int)가 필요합니다.";
+						else if(temp2 != String(int(temp2))) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 숫자가 들어가야 합니다.";
+						else if((int(temp2)) <= 0) msg = "명령어의 형식이 잘못되었습니다. amount(int)에는 0보다 큰 숫자가 들어가야 합니다.";
+						else {
+							Game.currentGame.itemManager.achieveItem(int(temp1), int(temp2));
+							msg = "아이템 코드 "+temp1+" "+ItemDB.getItem(int(temp1)).itemName+"(이)가 "+temp2+"개 만큼 인벤토리에 추가되었습니다.";
+						}
+					}
+					break;
+				
 				default:
 					msg = "존재하지 않는 명령어 입니다. help@를 입력하여 존재하는 명령어를 알아보세요.";
 					break;

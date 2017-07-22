@@ -26,10 +26,11 @@
 		
 		private var _inventorybtn:MovieClip;
 		private var _menubtn:MovieClip;
+		private var _inventoryUI:InventoryUI;
 
 		public function GameplayUI() {
 			_clip = new gameplayUIClip();
-			_portrait = CharacterDB.getCharacterAt(Game.currentGame.character).portrait;
+			_portrait = CharacterDB.getCharacterAt(Game.currentGame.character).clip;
 			_bar_hp = new bar_hp();
 			_bar_st = new bar_st();
 			_txt_hp = new TextField();
@@ -39,6 +40,7 @@
 			
 			_inventorybtn = new button();
 			_menubtn = new button();
+			_inventoryUI = new InventoryUI();
 			
 			_portrait.gotoAndStop("portrait");
 			_portrait.width = _portrait.height = 100;
@@ -83,6 +85,11 @@
 			_menubtn.x = 585;
 			_inventorybtn.y = _menubtn.y = -305;
 			
+			_inventorybtn.addEventListener(MouseEvent.CLICK, clickHandler);
+			_menubtn.addEventListener(MouseEvent.CLICK, clickHandler);
+			
+			_inventoryUI.visible = false;
+			
 			this.addChild(_clip);
 			_clip.addChild(_portrait);
 			_clip.addChild(_bar_hp);
@@ -92,9 +99,11 @@
 			_clip.addChild(_menubtn);
 			_clip.addChild(_inventorybtn);
 			_clip.addChild(_skillField);
+			_clip.addChild(_inventoryUI);
 		}
 		
 		private function mouseOverHandler(e:MouseEvent):void {
+			if(Game.currentGame.noAction) return;
 			switch(e.target){
 				case _portrait:
 					_portrait.removeEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);
@@ -114,12 +123,28 @@
 			}
 		}
 		
+		private function clickHandler(e:MouseEvent):void {
+			if(Game.currentGame.noAction) return;
+			switch(e.target){
+				case _inventorybtn:
+					Game.currentGame.inventoryOnOff();
+					break;
+				case _menubtn:
+					trace("menu button");
+					break;
+			}
+		}
+		
 		public function get hpBar():MovieClip {
 			return _bar_hp;
 		}
 		
 		public function get stBar():MovieClip {
 			return _bar_st;
+		}
+		
+		public function get inventoryUI():InventoryUI {
+			return _inventoryUI;
 		}
 		
 		public function set hpTxt(s:String):void {
@@ -129,6 +154,7 @@
 		public function set stTxt(s:String):void {
 			_txt_st.text = s;
 		}
+		
 
 	}
 	

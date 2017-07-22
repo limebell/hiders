@@ -1,11 +1,12 @@
 ﻿package game.db {
 	import flash.display.MovieClip;
+	import flash.utils.getDefinitionByName;
 	
 	public class ItemData {
 
-		internal var _itemCode:String, _itemName:String, _description:String, _itemClass:String, _durability:int, _weight:int, _clip:MovieClip;
+		internal var _itemCode:int, _itemName:String, _description:String, _itemClass:String, _durability:int, _weight:int, _clip:String;
 		
-		public function get itemCode():String {
+		public function get itemCode():int {
 			return _itemCode;
 		}
 		
@@ -22,7 +23,7 @@
 		}
 		
 		public function get durability():int {
-			return _int;
+			return _durability;
 		}
 		
 		public function get weight():int {
@@ -30,7 +31,7 @@
 		}
 		
 		public function get clip():MovieClip {
-			return _clip;
+			return new (Class(getDefinitionByName(_clip)))();
 		}
 
 	}

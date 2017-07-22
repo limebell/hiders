@@ -1,16 +1,17 @@
 ﻿package game.core {
-	import flash.events.EventDispatcher;
-	import flash.display.MovieClip;
-	import flash.errors.IllegalOperationError;
-	
 	import game.map.World;
 	import game.ui.Warning;
 	import game.map.Map;
 	import game.ui.GameplayUI;
-	import game.ui.ConsoleUI;
+	import game.ui.Console;
+	import game.ui.Shade;
+	import game.ui.InventoryUI;
+	
+	import flash.events.EventDispatcher;
+	import flash.display.MovieClip;
+	import flash.errors.IllegalOperationError;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
-	import game.ui.Shade;
 	
 	public class Game extends EventDispatcher {
 		private static const NO_DATA:int = -1;
@@ -19,12 +20,14 @@
 		private var _root:MovieClip;
 		private var _data:Object;
 		
-		private var _console:ConsoleUI;
+		private var _console:Console;
 		private var _ui:GameplayUI;
 		private var _world:World;
 		private var _map:Map;
 		
 		private var _display:MovieClip;
+		
+		private var _noAction:Boolean;
 		
 		private var _mapManager:MapManager;
 		private var _statusManager:StatusManager;
@@ -70,13 +73,16 @@
 		}
 		
 		private function startGame():void {
+			_noAction = false;
+			
 			_world = new World(new Character(_characterIndex), _map);
 			_mapManager = new MapManager(_world);
 				
 			_ui = new GameplayUI();
 			_statusManager = new StatusManager(_ui, true, _characterIndex);
+			_itemManager = new ItemManager(_ui.inventoryUI);
 			
-			_console = new ConsoleUI();
+			_console = new Console();
 			_console.visible = false;
 			
 			_display.addChild(_world);
@@ -112,15 +118,33 @@
 			return _mapManager;
 		}
 		
+		public function inventoryOnOff():void {
+			_itemManager.inventoryUIOnOff();
+			switchAction();
+		}
+		
 		public function get root():MovieClip {
 			return _root;
 		}
 		
+		public function get noAction():Boolean {
+			return _noAction;
+		}
+		
+		public function set noAction(b:Boolean):void {
+			_noAction = b;
+		}
+		
+		public function switchAction():void {
+			_noAction = !_noAction;
+		}
+		
 		private function keydownHandler(e:KeyboardEvent):void {
 			switch(e.keyCode){
-				case 192:	//`
+				case 192:	//"`"
 					//open console
 					_console.switchState();
+					this.switchAction();
 					break;
 				case Keyboard.I:
 					//open inventory;

@@ -2,10 +2,10 @@
 	import flash.events.EventDispatcher;
 	import fl.transitions.Tween;
 	import fl.transitions.easing.*;
+	import fl.transitions.TweenEvent;
 	
 	import game.map.World;
 	import game.event.MapEvent;
-	import fl.transitions.TweenEvent;
 	import game.map.Map;
 	import game.ui.Shade;
 	
@@ -31,6 +31,7 @@
 		
 		private function moveLeftHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
+			if(Game.currentGame.noAction) return;
 			_world.character.goLeft();
 			
 			if(!isBuilding(_globalLocation)){
@@ -46,6 +47,7 @@
 		
 		private function moveRightHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
+			if(Game.currentGame.noAction) return;
 			_world.character.goRight();
 			
 			if(!isBuilding(_globalLocation)){
@@ -60,6 +62,7 @@
 		
 		private function moveUpHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
+			if(Game.currentGame.noAction) return;
 			if(!isBuilding(_globalLocation)){
 				_world.character.climb();
 				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
@@ -75,6 +78,7 @@
 		
 		private function moveDownHandler(e:MapEvent):void {
 			if(_tween != null && _tween.isPlaying) return;
+			if(Game.currentGame.noAction) return;
 			if(!isBuilding(_globalLocation)){
 				
 			} else {

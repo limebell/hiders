@@ -223,6 +223,7 @@
 			
 			if (!isBuilding(_globalLocation)) {
 				// visibility ON if in range
+				trace("inCave");
 				for (i = 0; i < _world.map.caveLength; i++) {
 					if (isCaveInRange(i, _from, _to))
 						_world.caves[i].visible = true;
@@ -232,12 +233,17 @@
 				
 				// mapObjects in Cave
 				for (i = 0; i < _world.map.numObjects; i++) {
-					var object: MapObjectInfo = _world.map.objectAt(i);
+					trace("scan Objects");
+					var object: MapObjectInfo = _world.map.mapObjects[i]
 					
-					if (isObjectInRangeCave(i, _from, _to))
+					if (isObjectInRangeCave(i, _from, _to)){
 						object.clip.visible = true;
-					else
+						trace("visible");
+					}
+					else{
 						object.clip.visible = false;
+						trace("invisible");
+					}
 				}
 				
 			} else {

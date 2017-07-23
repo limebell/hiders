@@ -17,13 +17,16 @@
 			_cave = new Vector.<Point>();
 			_buildings = new Vector.<Building>();
 			
-			var objectRock:MapObjectData = MapObjectDB.getObject(1);			
-			var rockInfo:MapObjectInfo = new MapObjectInfo(objectRock, "1", new Point(640, 360), true, true);
+			randomizeMap();
+			
+			var objectRock:MapObjectData = MapObjectDB.getObject(1);
+			var rockInfo:MapObjectInfo = new MapObjectInfo(objectRock, "0", new Point(640, 360), true, true);
 			
 			_mapObjects = new Vector.<MapObjectInfo>();
 			_mapObjects.push(rockInfo);
 			
-			randomizeMap();
+			trace(_mapObjects[0].globalLocation);
+			
 		}
 		
 		private function randomizeMap():void {
@@ -60,8 +63,8 @@
 			return _mapObjects.length;
 		}
 		
-		public function objectAt(index:int):MapObjectInfo {
-			return _mapObjects[index];
+		public function get mapObjects():Vector.<MapObjectInfo> {
+			return _mapObjects
 		}
 		
 		public function buildingAt(index:int):Building {

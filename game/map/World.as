@@ -142,6 +142,12 @@
 			//initiating character, mapObject, and rendering backField and mapObjects
 			_backField = new MovieClip();
 			_objectsClip = new MovieClip();
+			
+			_mapObjects = new Vector.<MovieClip>();
+			for (i = 0; i < _map.numObjects; i++){
+				_mapObjects.push(_map.mapObjects[i].clip);
+			}
+
 			renderField("0");
 			
 			//initiating moveButtnos
@@ -219,13 +225,14 @@
 			//rendering mapObjects
 			for(i = _objectsClip.numChildren; i > 0; i++) _objectsClip.removeChildAt(0);
 			
-			_mapObjects = new Vector.<MovieClip>();
-			for each(var object:MovieClip in _mapObjects){
-				if(object.clip != null){
-					_objectsClip.addChild(object);
-					object.visible = true;
+			for each(var objClip:MovieClip in _mapObjects){
+				if(objClip != null){
+					objClip.visible = true
+					;
+					_objectsClip.addChild(objClip);					
 				}
 			}
+			trace(_mapObjects[0]);
 		}
 		
 		private function clickHandler(e:MouseEvent):void {

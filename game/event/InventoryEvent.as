@@ -6,11 +6,11 @@
 		public static const
 		STATE_INVENTORY:String = "state_inventory",
 		STATE_CRAFT:String = "state_craft",
-		STATE_DISMANTLE:String = "state_dismantle",
+		STATE_DECOMPOSE:String = "state_decompose",
 		ITEM_USE:String = "item_use",
 		ITEM_DUMP:String = "item_dump",
 		ITEM_CRAFT:String = "item_craft",
-		ITEM_DISMANTLE:String = "item_dismantle",
+		ITEM_DECOMPOSE:String = "item_decompose",
 		CHECKBOX:String = "checkbox";
 
 		public function InventoryEvent(type:String, bubbles:Boolean = false, cancelable:Boolean = false) {

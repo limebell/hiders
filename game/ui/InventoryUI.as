@@ -12,7 +12,7 @@
 		public static const
 		INVENTORY:String = "inventory",
 		CRAFT:String = "craft",
-		DISMANTLE:String = "dismantle",
+		DECOMPOSE:String = "decompose",
 		ITEM_WIDTH:int = 50,
 		ITEM_HEIGHT:int = 50,
 		MAX_XNUM:int = 11;
@@ -25,11 +25,11 @@
 		private var _typeText:TextField;
 		private var _inventoryButton:Object;
 		private var _craftButton:Object;
-		private var _dismantleButton:Object;
+		private var _decomposeButton:Object;
 		private var _useButton:Object;
 		private var _dumpButton:Object;
 		private var _craftConfirmButton:Object;
-		private var _dumpConfirmButton:Object;
+		private var _decomposeConfirmButton:Object;
 		private var _closeButton:MovieClip;
 		private var _textFormat:TextFormat;
 		
@@ -61,11 +61,11 @@
 			
 			_inventoryButton = newButton("인벤토리", -450, -40);
 			_craftButton = newButton("조합", -350, -40);
-			_dismantleButton = newButton("분해", -250, -40);
+			_decomposeButton = newButton("분해", -250, -40);
 			_useButton = newButton("사용하기", 250, 210);
 			_dumpButton = newButton("버리기", 350, 210);
 			_craftConfirmButton = newButton("조합하기", 250, 210, 200);
-			_dumpConfirmButton = newButton("분해하기", 250, 210, 200);
+			_decomposeConfirmButton = newButton("분해하기", 250, 210, 200);
 			
 			_closeButton = new button();
 			_closeButton.width = _closeButton.height = 50;
@@ -146,7 +146,6 @@
 			_recipeField.tf.autoSize = "left";
 			_recipeField.tf.mouseEnabled = false;
 			_recipeField.tf.y = -25;
-			_recipeField.tf.text = "조합에 필요한 재료(소지/필요)";
 			_recipeField.recipes = new Vector.<Object>;
 			_recipeField.clip.addChild(_recipeField.tf);
 			_recipeField.clip.visible = false;
@@ -155,11 +154,11 @@
 			this.addChild(_typeText);
 			this.addChild(_inventoryButton.clip);
 			this.addChild(_craftButton.clip);
-			this.addChild(_dismantleButton.clip);
+			this.addChild(_decomposeButton.clip);
 			this.addChild(_useButton.clip);
 			this.addChild(_dumpButton.clip);
 			this.addChild(_craftConfirmButton.clip);
-			this.addChild(_dumpConfirmButton.clip);
+			this.addChild(_decomposeConfirmButton.clip);
 			
 			this.addChild(_explanationText);
 			this.addChild(_equipField.clip);
@@ -214,8 +213,8 @@
 				case _craftButton.btn:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.STATE_CRAFT));
 					break;
-				case _dismantleButton.btn:
-					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.STATE_DISMANTLE));
+				case _decomposeButton.btn:
+					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.STATE_DECOMPOSE));
 					break;
 				case _useButton.btn:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_USE));
@@ -226,8 +225,8 @@
 				case _craftConfirmButton.btn:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_CRAFT));
 					break;
-				case _dumpConfirmButton.btn:
-					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_DISMANTLE));
+				case _decomposeConfirmButton.btn:
+					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_DECOMPOSE));
 					break;
 				case _possibleOnly.checkBox:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.CHECKBOX));
@@ -248,6 +247,7 @@
 			obj.tf.x = -20;
 			obj.tf.y = 10;
 			obj.tf.width = 50;
+			obj.tf.height = 20;
 			obj.tf.defaultTextFormat = _textFormat;
 			obj.btn = new button();
 			obj.btn.width = obj.btn.height = 50;
@@ -265,14 +265,12 @@
 			if(prev != -1){
 				if(_state == CRAFT){
 					_craftItems[prev].select.visible = false;
-					recipeField.recipes[prev].clip.visible = false;
 				}
 				else _items[prev].select.visible = false;
 			}
 			if(index != -1){
 				if(_state == CRAFT){
 					_craftItems[index].select.visible = true;
-					recipeField.recipes[index].clip.visible = true;
 				}
 				else _items[index].select.visible = true;
 			}
@@ -282,7 +280,6 @@
 			if(tar != -1){
 				if(_state == CRAFT){
 					_craftItems[tar].select.visible = false;
-					recipeField.recipes[tar].clip.visible = false;
 				}
 				else _items[tar].select.visible = false;
 			}
@@ -352,7 +349,7 @@
 					_useButton.clip.visible = true;
 					_dumpButton.clip.visible = true;
 					_craftConfirmButton.clip.visible = false;
-					_dumpConfirmButton.clip.visible = false;
+					_decomposeConfirmButton.clip.visible = false;
 					_itemField.visible = true;
 					_craftField.visible = false;
 					_equipField.clip.visible = true;
@@ -364,23 +361,25 @@
 					_useButton.clip.visible = false;
 					_dumpButton.clip.visible = false;
 					_craftConfirmButton.clip.visible = true;
-					_dumpConfirmButton.clip.visible = false;
+					_decomposeConfirmButton.clip.visible = false;
 					_itemField.visible = false;
 					_craftField.visible = true;
 					_equipField.clip.visible = false;
 					_possibleOnly.clip.visible = true;
+					_recipeField.tf.text = "조합에 필요한 재료(소지/필요)";
 					_recipeField.clip.visible = true;
 					break;
-				case DISMANTLE:
-					_typeText.text = "Dismantle";
+				case DECOMPOSE:
+					_typeText.text = "Decomposition";
 					_useButton.clip.visible = false;
 					_dumpButton.clip.visible = false;
 					_craftConfirmButton.clip.visible = false;
-					_dumpConfirmButton.clip.visible = true;
+					_decomposeConfirmButton.clip.visible = true;
 					_itemField.visible = true;
 					_craftField.visible = false;
 					_equipField.clip.visible = false;
 					_possibleOnly.clip.visible = false;
+					_recipeField.tf.text = "분해 시 얻을 수 있는 재료";
 					_recipeField.clip.visible = true;
 					break;
 			}

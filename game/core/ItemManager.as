@@ -11,6 +11,8 @@
 	import game.db.CraftData;
 	import flash.display.MovieClip;
 	import game.db.ItemData;
+	import game.db.DecomposeData;
+	import flash.errors.IllegalOperationError;
 	
 	public class ItemManager extends EventDispatcher {
 		private var _inventory:Inventory;
@@ -21,35 +23,53 @@
 		private var _viewPossibleOnly:Boolean;
 
 		public function ItemManager(ui:InventoryUI, inv:Object = null) {
+			var i:int, j:int;
 			_inventory = new Inventory();
 			_ui = ui;
 			_viewPossibleOnly = true;
 			
-			for(var i:int = 0; i < ItemDB.getNumCraftRecipe(); i++){
-				var data:CraftData = ItemDB.getCraftRecipeAt(i);
-				_ui.craftItems.push(_ui.newItem(ItemDB.getItem(data.itemCode).clip));
+			for(i = 0; i < ItemDB.getNumCraftRecipe(); i++){
+				var data1:CraftData = ItemDB.getCraftRecipeAt(i);
+				_ui.craftItems.push(_ui.newItem(ItemDB.getItem(data1.itemCode).clip));
 				_ui.craftField.addChild(_ui.craftItems[i].clip);
 				_ui.craftItems[i].btn.addEventListener(MouseEvent.CLICK, clickHandler);
 				_ui.recipeField.recipes.push(new Object());
 				_ui.recipeField.recipes[i].vec = new Vector.<Object>();
 				_ui.recipeField.recipes[i].clip = new MovieClip();
 				_ui.recipeField.clip.addChild(_ui.recipeField.recipes[i].clip);
-				for(var j:int = 0; j < data.recipe.length; j++){
-					_ui.recipeField.recipes[i].vec.push(_ui.newItem(ItemDB.getItem(data.recipe[j].x).clip));
+				for(j = 0; j < data1.recipe.length; j++){
+					_ui.recipeField.recipes[i].vec.push(_ui.newItem(ItemDB.getItem(data1.recipe[j].x).clip));
 					_ui.recipeField.recipes[i].vec[j].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+j);
 					_ui.recipeField.recipes[i].vec[j].clip.y = 30;
 					_ui.recipeField.recipes[i].clip.addChild(_ui.recipeField.recipes[i].vec[j].clip);
+					//_ui.recipeField.recipes[i].clip.visible = false;
+				}
+			}
+			
+			for(i = ItemDB.getNumCraftRecipe(); i < ItemDB.getNumCraftRecipe()+ItemDB.getNumDecomposeRecipe(); i++){
+				var data2:DecomposeData = ItemDB.getDecomposeRecipeAt(i-ItemDB.getNumCraftRecipe());
+				_ui.recipeField.recipes.push(new Object());
+				_ui.recipeField.recipes[i].vec = new Vector.<Object>();
+				_ui.recipeField.recipes[i].clip = new MovieClip();
+				_ui.recipeField.clip.addChild(_ui.recipeField.recipes[i].clip);
+				for(j = 0; j < data2.recipe.length; j++){
+					_ui.recipeField.recipes[i].vec.push(_ui.newItem(ItemDB.getItem(data2.recipe[j].x).clip));
+					_ui.recipeField.recipes[i].vec[j].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+j);
+					_ui.recipeField.recipes[i].vec[j].clip.y = 30;
+					_ui.recipeField.recipes[i].vec[j].tf.text = String(data2.recipe[i].y);
+					_ui.recipeField.recipes[i].clip.addChild(_ui.recipeField.recipes[i].vec[j].clip);
 					_ui.recipeField.recipes[i].clip.visible = false;
+					
 				}
 			}
 			
 			this.addEventListener(InventoryEvent.STATE_INVENTORY, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.STATE_CRAFT, inventoryEventHandler);
-			this.addEventListener(InventoryEvent.STATE_DISMANTLE, inventoryEventHandler);
+			this.addEventListener(InventoryEvent.STATE_DECOMPOSE, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.ITEM_USE, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.ITEM_DUMP, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.ITEM_CRAFT, inventoryEventHandler);
-			this.addEventListener(InventoryEvent.ITEM_DISMANTLE, inventoryEventHandler);
+			this.addEventListener(InventoryEvent.ITEM_DECOMPOSE, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.CHECKBOX, inventoryEventHandler);
 		}
 		
@@ -109,11 +129,11 @@
 					refreshInventoryUI();
 					break;
 				
-				case InventoryEvent.STATE_DISMANTLE:
-					if(_ui.state == InventoryUI.DISMANTLE) return;
+				case InventoryEvent.STATE_DECOMPOSE:
+					if(_ui.state == InventoryUI.DECOMPOSE) return;
 					_ui.removeSelect(_selectedItem);
 					_prevSelectedItem = _selectedItem = -1
-					_ui.state = InventoryUI.DISMANTLE;
+					_ui.state = InventoryUI.DECOMPOSE;
 					refreshInventoryUI();
 					break;
 				
@@ -133,7 +153,12 @@
 					refreshInventoryUI();
 					break;
 				
-				case InventoryEvent.ITEM_DISMANTLE:
+				case InventoryEvent.ITEM_DECOMPOSE:
+					if(_selectedItem == -1 || decomposeIndex(_inventory.itemAt(_selectedItem).itemCode) == -1) return;
+					decompose(_selectedItem);
+					_ui.removeSelect(_selectedItem);
+					_prevSelectedItem = _selectedItem = -1
+					refreshInventoryUI();
 					break;
 				
 				case InventoryEvent.CHECKBOX:
@@ -154,6 +179,18 @@
 			return flag;
 		}
 		
+		private function decomposeIndex(itemCode:int):int {
+			var ret:int = -1, i:int;
+			for(i = 0; i < ItemDB.getNumDecomposeRecipe(); i++){
+				if(itemCode == ItemDB.getDecomposeRecipeAt(i).itemCode){
+					ret = i;
+					break;
+				}
+			}
+			
+			return ret;
+		}
+		
 		private function craft(index:int):void {
 			var i:int, j:int, data:CraftData;
 			data = ItemDB.getCraftRecipeAt(index);
@@ -168,18 +205,34 @@
 			achieveItem(data.itemCode);
 		}
 		
+		private function decompose(index:int):void {
+			var i:int, data:DecomposeData;
+			if(decomposeIndex(_inventory.itemAt(index).itemCode) == -1) throw new IllegalOperationError("잘못된 분해입니다");
+			data = ItemDB.getDecomposeRecipeAt(decomposeIndex(_inventory.itemAt(index).itemCode));
+			
+			for(i = 0; i < data.recipe.length; i++) achieveItem(data.recipe[i].x, data.recipe[i].y);
+			
+			removeItemAt(index);
+		}
+		
 		public function inventoryUIOnOff():void {
 			_ui.visible = !_ui.visible;
 			_prevSelectedItem = _selectedItem = -1;
+			_ui.state = InventoryUI.INVENTORY;
 			if(_ui.visible) refreshInventoryUI();
 		}
 		
 		public function refreshInventoryUI():void {
-			var i:int, j:int, count:int;
+			var i:int, j:int, count:int, data:ItemData;
 			_ui.selectItem(_prevSelectedItem, _selectedItem);
 			
-			if(_ui.state != InventoryUI.CRAFT){
+			for(i = 0; i < ItemDB.getNumCraftRecipe()+ItemDB.getNumDecomposeRecipe(); i++)
+				_ui.recipeField.recipes[i].clip.visible = false;
+			
+			if(_ui.state == InventoryUI.INVENTORY){
+				//state == inventory
 				for(i = 0; i < _inventory.numItems; i++){
+					_ui.items[i].clip.visible = true;
 					_ui.items[i].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+(i%InventoryUI.MAX_XNUM));
 					_ui.items[i].clip.y = InventoryUI.ITEM_HEIGHT*1.25*(1/2+int(i/InventoryUI.MAX_XNUM));
 					if(_inventory.itemAt(i).number != 1) _ui.items[i].tf.text = _inventory.itemAt(i).number;
@@ -189,7 +242,8 @@
 						_ui.description = _inventory.itemAt(i).itemName+"/"+_inventory.itemAt(i).description;
 					}
 				}
-			} else {
+			} else if(_ui.state == InventoryUI.CRAFT){
+				//state == craft
 				count = 0;
 				for(i = 0; i < ItemDB.getNumCraftRecipe(); i++){
 					if((_viewPossibleOnly && craftable(i)) || !_viewPossibleOnly){
@@ -198,16 +252,35 @@
 						_ui.craftItems[i].clip.visible = true;
 						count++;
 						if(i == _selectedItem){
-							var data:ItemData = ItemDB.getItem(ItemDB.getCraftRecipeAt(i).itemCode);
+							_ui.recipeField.recipes[i].clip.visible = true;
+							data = ItemDB.getItem(ItemDB.getCraftRecipeAt(i).itemCode);
 							_ui.description = data.itemName+"/"+data.description;
 							for(j = 0; j < ItemDB.getCraftRecipeAt(i).recipe.length; j++){
 								_ui.recipeField.recipes[i].vec[j].tf.text = numItem(ItemDB.getCraftRecipeAt(i).recipe[j].x)+"/"+ItemDB.getCraftRecipeAt(i).recipe[j].y;
 							}
-							
 						}
 					} else _ui.craftItems[i].clip.visible = false;
 				}
 				_ui.setCheckButton(_viewPossibleOnly);
+			} else {
+				//state == decompose
+				count = 0;
+				for(i = 0; i < _inventory.numItems; i++){
+					if(decomposeIndex(_inventory.itemAt(i).itemCode) != -1){
+						_ui.items[i].clip.visible = true;
+						_ui.items[i].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+(count%InventoryUI.MAX_XNUM));
+						_ui.items[i].clip.y = InventoryUI.ITEM_HEIGHT*1.25*(1/2+int(count/InventoryUI.MAX_XNUM));
+						count++;
+					} else _ui.items[i].clip.visible = false;
+					
+					if(_inventory.itemAt(i).number != 1) _ui.items[i].tf.text = _inventory.itemAt(i).number;
+					else _ui.items[i].tf.text = "";
+					
+					if(i == _selectedItem){
+						_ui.recipeField.recipes[ItemDB.getNumCraftRecipe()+decomposeIndex(_inventory.itemAt(i).itemCode)].clip.visible = true;
+						_ui.description = _inventory.itemAt(i).itemName+"/"+_inventory.itemAt(i).description;
+					}
+				}
 			}
 			if(_selectedItem == -1) _ui.description = "\n\n\n\n선택된 아이템이 없습니다.\n아이템 설명을 보려면 아이템을 클릭하여 선택해 주세요.";
 		}

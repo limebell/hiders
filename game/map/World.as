@@ -28,6 +28,8 @@
 		private var _backField:MovieClip;
 		private var _mapObjects:Vector.<MapObjectInfo>;
 		private var _frontField:MovieClip;
+		private var _interectionField:MovieClip;
+		private var _interections:Vector.<Object>;
 		private var _moveButtons:MovieClip;
 		private var _map:Map;
 
@@ -143,13 +145,19 @@
 			//initiating character, mapObject, and rendering backField and mapObjects
 			_backField = new MovieClip();
 			_frontField = new MovieClip();
+			_interectionField = new MovieClip();
 			_mapObjects = new Vector.<MapObjectInfo>();
 			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(0, 200), true, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(200, 200), false, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(0), "0", new Point(-100, -100), false, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0:1-3", new Point(0, 150), false, true));
 			for(i = 0; i < _mapObjects.length; i++){
+				//아이템 배치 오브젝트
+				if(_mapObjects[i].clip == null) continue;
 				//바닥이 기준점
 				if(Map.isBuilding(_mapObjects[i].globalLocation)){
 					_mapObjects[i].clip.x = Map.buildingIndex(_mapObjects[i].globalLocation)*ROOM_WIDTH+_mapObjects[i].localLocation.x;
-					_mapObjects[i].clip.y = Map.buildingFloor(_mapObjects[i].globalLocation)*ROOM_HEIGHT+_mapObjects[i].localLocation.y;
+					_mapObjects[i].clip.y = -Map.buildingFloor(_mapObjects[i].globalLocation)*ROOM_HEIGHT+_mapObjects[i].localLocation.y;
 				} else {
 					_mapObjects[i].clip.x = int(_mapObjects[i].globalLocation)*CAVE_WIDTH + _mapObjects[i].localLocation.x;
 					_mapObjects[i].clip.y = _mapObjects[i].localLocation.y;
@@ -178,6 +186,7 @@
 			this.addChild(_backField);
 			this.addChild(_character);
 			this.addChild(_frontField);
+			this.addChild(_interectionField);
 			this.addChild(_moveButtons);
 			
 			_moveButtons.leftbtn.addEventListener(MouseEvent.CLICK, clickHandler);
@@ -231,7 +240,7 @@
 			
 			//rendering mapObjects
 			for each(var object:MapObjectInfo in _mapObjects){
-				if(object.clip == null) continue;
+				if(object.clip == null || !object.isExisting) continue;
 
 				if(buildingNum(object.globalLocation) == buildingNum(gloc)){
 					if(object.isFront)
@@ -241,7 +250,10 @@
 				}
 				object.clip.visible = false;
 			}
+			
+			setInterection(gloc);
 		}
+
 		
 		private function clickHandler(e:MouseEvent):void {
 			switch(e.target){
@@ -279,11 +291,46 @@
 			Game.currentGame.setMouse("standard");
 		}
 		
+		private function interectionHandler(e:MouseEvent):void {
+			for(var i:int = 0; i < _interections.length; i++){
+				if(e.target == _interections[i].clip){
+					if(Game.currentGame.interectionManager.interect(_mapObjects[_interections[i].index].objectCode)) _mapObjects[_interections[i].index].isExisting = false;
+					trace("interect index : "+_interections[i].index+", type : "+_mapObjects[_interections[i].index].objectCode);
+					break;
+				}
+			}
+			Game.currentGame.mapManager.redraw();
+		}
+		
 		public function setButton(l:Boolean = false, r:Boolean = false, u:Boolean = false, d:Boolean = false):void {
 			_moveButtons.leftbtn.mouseEnabled = l;
 			_moveButtons.rightbtn.mouseEnabled = r;
 			_moveButtons.upbtn.mouseEnabled = u;
 			_moveButtons.downbtn.mouseEnabled = d;
+		}
+		
+		public function initInterection():void {
+			for(var i:int = _interectionField.numChildren; i > 0; i--) _interectionField.removeChildAt(0);
+		}
+		
+		public function setInterection(gloc:String):void {
+			_interections = new Vector.<Object>();
+			var object:MapObjectInfo;
+			for(var i:int = 0; i < _mapObjects.length; i++){
+				object = _mapObjects[i];
+				if(!object.interactionable || !object.isExisting) continue;
+				if(object.globalLocation == gloc){
+					_interections.push(new Object());
+					_interections[_interections.length-1].clip = new interectionMC();
+					_interections[_interections.length-1].clip.gotoAndStop("stop");
+					_interections[_interections.length-1].clip.x = object.localLocation.x;
+					if(object.clip != null) _interections[_interections.length-1].clip.y = object.localLocation.y - object.clip.height - 20;
+					else _interections[_interections.length-1].clip.y = object.localLocation.y- 20;
+					_interectionField.addChild(_interections[_interections.length-1].clip);
+					_interections[_interections.length-1].index = i;
+					_interections[_interections.length-1].clip.addEventListener(MouseEvent.CLICK, interectionHandler);
+				}
+			}
 		}
 
 		public function get character():Character {

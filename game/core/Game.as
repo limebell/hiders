@@ -32,6 +32,7 @@
 		private var _mapManager:MapManager;
 		private var _statusManager:StatusManager;
 		private var _itemManager:ItemManager;
+		private var _interectionManager:InterectionManager;
 		
 		private var _characterIndex:int;
 		
@@ -81,6 +82,7 @@
 			_ui = new GameplayUI();
 			_statusManager = new StatusManager(_ui, true, _characterIndex);
 			_itemManager = new ItemManager(_ui.inventoryUI);
+			_interectionManager = new InterectionManager();
 			
 			_console = new Console();
 			_console.visible = false;
@@ -116,6 +118,10 @@
 		
 		public function get mapManager():MapManager {
 			return _mapManager;
+		}
+		
+		public function get interectionManager():InterectionManager {
+			return _interectionManager;
 		}
 		
 		public function inventoryOnOff():void {

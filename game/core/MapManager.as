@@ -106,6 +106,9 @@
 			//장거리 이동도 가능하도록 수정하고 싶음, 뭔가 gloc이 바뀔때마다 이벤트가 발생해서 새로그리도록?
 			if(_tween != null && _tween.isPlaying) _tween.stop();
 			_isMoving = true;
+			//인터렉션 필드 초기화
+			_world.initInterection();
+			
 			if(!Map.isBuilding(_globalLocation)){
 				//동굴 내에서 좌우로 움직이는 트윈
 				moveFields(-int(gloc)*World.CAVE_WIDTH, 0, Math.abs((int(gloc)*World.CAVE_WIDTH+_world.backField.x))/Number(spd));
@@ -210,6 +213,7 @@
 		
 		private function tweenFinishHandler(e:TweenEvent):void {
 			_world.character.standStill();
+			_world.setInterection(_globalLocation);
 			if(!Map.isBuilding(_globalLocation)){
 				_world.backField.x = _world.frontField.x = -int(_globalLocation)*World.CAVE_WIDTH;
 			} else {
@@ -218,7 +222,6 @@
 			}
 			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 			_isMoving = false;
-				
 		}
 		
 		private function setButtonOf(gloc:String):void {
@@ -230,6 +233,12 @@
 			}
 			
 			_world.setButton(Map.isLeftOpened(t), Map.isRightOpened(t), Map.isUpOpened(t), Map.isDownOpened(t));
+		}
+		
+		public function redraw():void {
+			redrawFromTo();
+			_world.initInterection();
+			_world.setInterection(_globalLocation);
 		}
 		
 		private function redrawFromTo(from:String = "$", to:String = "$"):void {
@@ -245,10 +254,14 @@
 				}
 				//오브젝트 그리기
 				for(i = 0; i < _world.mapObjects.length; i++){
-					if(isCaveInRange(int(_world.mapObjects[i].globalLocation), _from, _to))
-						_world.mapObjects[i].clip.visible = true;
-					else
-						_world.mapObjects[i].clip.visible = false;
+					if(isCaveInRange(int(_world.mapObjects[i].globalLocation), _from, _to)){
+						if(_world.mapObjects[i].clip != null){
+							if(_world.mapObjects[i].isExisting) _world.mapObjects[i].clip.visible = true;
+							else _world.mapObjects[i].clip.visible = false;
+						}
+					} else {
+						if(_world.mapObjects[i].clip != null) _world.mapObjects[i].clip.visible = false;
+					}
 				}
 				
 			} else {
@@ -264,9 +277,12 @@
 				//오브젝트 그리기
 				for(i = 0; i < _world.mapObjects.length; i++){
 					if(isRoomInRange(Map.buildingFloor(_world.mapObjects[i].globalLocation), Map.buildingIndex(_world.mapObjects[i].globalLocation), _from, _to))
-						_world.mapObjects[i].clip.visible = true;
+						if(_world.mapObjects[i].clip != null){
+							if(_world.mapObjects[i].isExisting) _world.mapObjects[i].clip.visible = true;
+							else _world.mapObjects[i].clip.visible = false;
+						}
 					else
-						_world.mapObjects[i].clip.visible = false;
+						if(_world.mapObjects[i].clip != null) _world.mapObjects[i].clip.visible = false;
 				}
 				
 				if(Map.buildingFloor(_from) > Map.buildingFloor(_to)) j = Map.buildingFloor(_to);
@@ -278,14 +294,6 @@
 					}
 				}
 			}
-			
-			//맵오브젝트 그리는 부분
-			//...
-			/*for(i=0;i<맵오브젝트 개수;i++){
-				i번째 오브젝트의 글로벌 위치가 저 프롬투 범위에 있으면? > visible = true;
-				아니면 false
-			}*/
-			
 		}
 		
 		private function isCaveInRange(i:int, from:String, to:String):Boolean {

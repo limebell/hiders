@@ -11,7 +11,8 @@
 		}
 		
 		public function get clip():MovieClip {
-			return new (Class(getDefinitionByName(_clip)))();
+			if(_clip == null) return null;
+			else return new (Class(getDefinitionByName(_clip)))();
 		}
 		
 		public function get interactionable():Boolean {

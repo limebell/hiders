@@ -44,6 +44,10 @@
 			return _isExisting;
 		}
 		
+		public function set isExisting(b:Boolean):void {
+			_isExisting = b;
+		}
+		
 		public function isNear(target:String):Boolean {
 			//Need to be fixed
 			trace(target+" is Near");

@@ -95,7 +95,7 @@
 					break;
 				
 				case "status":
-					msg = Game.currentGame.statusManager.status;
+					msg = Game.currentGame.statusManager.statusForConsole;
 					break;
 				
 				case "add":

@@ -7,6 +7,7 @@
 	import flash.events.MouseEvent;
 	import game.core.Game;
 	import game.event.InventoryEvent;
+	import game.db.ItemDB;
 	
 	public class InventoryUI extends MovieClip {
 		public static const
@@ -35,6 +36,7 @@
 		
 		private var _explanationText:TextField;
 		private var _itemField:MovieClip;
+		private var _classificationBars:Vector.<MovieClip>;
 		private var _craftField:MovieClip;
 		private var _fieldMask:MovieClip;
 		private var _equipField:Object;
@@ -89,12 +91,20 @@
 			_fieldMask.graphics.beginFill(0xffffff);
 			_fieldMask.graphics.drawRect(0, 0, 700, 250);
 			_fieldMask.x = -450;
-			_itemField.mask = _fieldMask;
 			_items = new Vector.<Object>();
+			_classificationBars = new Vector.<MovieClip>();
+			_classificationBars.push(new classificationClip());
+			_classificationBars.push(new classificationClip());
+			_classificationBars.push(new classificationClip());
+			_classificationBars.push(new classificationClip());
+			_classificationBars[0].tf.text = ItemDB.CONSUMABLE;
+			_classificationBars[1].tf.text = ItemDB.EQUIPMENT;
+			_classificationBars[2].tf.text = ItemDB.TOOL;
+			_classificationBars[3].tf.text = ItemDB.MATERIAL;
+			_classificationBars[0].visible = _classificationBars[1].visible = _classificationBars[2].visible = _classificationBars[3].visible = false;
 			
 			_craftField = new MovieClip();
 			_craftField.x = -450;
-			_craftField.mask = _fieldMask;
 			_craftItems = new Vector.<Object>();
 			
 			_equipField = new Object();
@@ -105,7 +115,17 @@
 			_equipField.body = newEquipField(-30, -40);
 			_equipField.weapon = newEquipField(40, -20);
 			_equipField.leg = newEquipField(-30, 70);
+			_equipField.statusText = new TextField();
+			_equipField.statusText.mouseEnabled = false;
+			_textFormat.align = "left";
+			_textFormat.size = "15";
+			_equipField.statusText.defaultTextFormat = _textFormat;
+			_equipField.statusText.x = -450;
+			_equipField.statusText.y = -50;
+			_equipField.statusText.width = 300;
+			_equipField.statusText.height = 120;
 			_equipField.clip.y = -150;
+			_equipField.clip.addChild(_equipField.statusText);
 			_equipField.clip.addChild(_equipField.human);
 			_equipField.clip.addChild(_equipField.head);
 			_equipField.clip.addChild(_equipField.arm);
@@ -314,8 +334,16 @@
 			return _recipeField;
 		}
 		
-		public function get state():String {
+		public function get classificationBars():Vector.<MovieClip> {
+			return _classificationBars;
+		}
+		
+		public function get state():String {	
 			return _state;
+		}
+		
+		public function set statusText(text:String):void {
+			_equipField.statusText.text = text;
 		}
 		
 		public function set description(text:String):void {
@@ -355,6 +383,11 @@
 					_equipField.clip.visible = true;
 					_possibleOnly.clip.visible = false;
 					_recipeField.clip.visible = false;
+					_itemField.mask = _fieldMask;
+					_itemField.addChild(_classificationBars[0]);
+					_itemField.addChild(_classificationBars[1]);
+					_itemField.addChild(_classificationBars[2]);
+					_itemField.addChild(_classificationBars[3]);
 					break;
 				case CRAFT:
 					_typeText.text = "Crafting";
@@ -368,6 +401,11 @@
 					_possibleOnly.clip.visible = true;
 					_recipeField.tf.text = "조합에 필요한 재료(소지/필요)";
 					_recipeField.clip.visible = true;
+					_craftField.mask = _fieldMask;
+					_craftField.addChild(_classificationBars[0]);
+					_craftField.addChild(_classificationBars[1]);
+					_craftField.addChild(_classificationBars[2]);
+					_craftField.addChild(_classificationBars[3]);
 					break;
 				case DECOMPOSE:
 					_typeText.text = "Decomposition";
@@ -381,6 +419,11 @@
 					_possibleOnly.clip.visible = false;
 					_recipeField.tf.text = "분해 시 얻을 수 있는 재료";
 					_recipeField.clip.visible = true;
+					_itemField.mask = _fieldMask;
+					_itemField.addChild(_classificationBars[0]);
+					_itemField.addChild(_classificationBars[1]);
+					_itemField.addChild(_classificationBars[2]);
+					_itemField.addChild(_classificationBars[3]);
 					break;
 			}
 			_state = t;

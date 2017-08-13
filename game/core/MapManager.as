@@ -1,13 +1,13 @@
 ﻿package game.core {
-	import flash.events.EventDispatcher;
-	import fl.transitions.Tween;
-	import fl.transitions.easing.*;
-	import fl.transitions.TweenEvent;
-	
 	import game.map.World;
 	import game.event.MapEvent;
 	import game.map.Map;
 	import game.ui.Shade;
+	
+	import flash.events.EventDispatcher;
+	import fl.transitions.Tween;
+	import fl.transitions.easing.*;
+	import fl.transitions.TweenEvent;
 	
 	public class MapManager extends EventDispatcher {
 		private const
@@ -16,11 +16,13 @@
 		private var _world:World;
 		private var _globalLocation:String;
 		private var _tween:Tween;
+		private var _isMoving:Boolean;
 		//_globalLocation의 형식 : (동굴 위치 or 빌딩 번호:빌딩 층-빌딩 x축 인덱스  ex) 2:2-3, 34)
 
 		public function MapManager(world:World) {
 			_world = world;
 			_globalLocation = "0";
+			_isMoving = false;
 			this.addEventListener(MapEvent.MOVE_LEFT, moveLeftHandler);
 			this.addEventListener(MapEvent.MOVE_RIGHT, moveRightHandler);
 			this.addEventListener(MapEvent.MOVE_UP, moveUpHandler);
@@ -30,11 +32,11 @@
 		}
 		
 		private function moveLeftHandler(e:MapEvent):void {
-			if(_tween != null && _tween.isPlaying) return;
+			if(_isMoving) return;
 			if(Game.currentGame.noAction) return;
 			_world.character.goLeft();
 			
-			if(!isBuilding(_globalLocation)){
+			if(!Map.isBuilding(_globalLocation)){
 				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
 				moveTo(String(int(_globalLocation)-1), SPD_HOR);
 			}
@@ -46,11 +48,11 @@
 		}
 		
 		private function moveRightHandler(e:MapEvent):void {
-			if(_tween != null && _tween.isPlaying) return;
+			if(_isMoving) return;
 			if(Game.currentGame.noAction) return;
 			_world.character.goRight();
 			
-			if(!isBuilding(_globalLocation)){
+			if(!Map.isBuilding(_globalLocation)){
 				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
 				moveTo(String(int(_globalLocation)+1), SPD_HOR);
 			}
@@ -61,9 +63,9 @@
 		}
 		
 		private function moveUpHandler(e:MapEvent):void {
-			if(_tween != null && _tween.isPlaying) return;
+			if(_isMoving) return;
 			if(Game.currentGame.noAction) return;
-			if(!isBuilding(_globalLocation)){
+			if(!Map.isBuilding(_globalLocation)){
 				_world.character.climb();
 				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
 				_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y+World.CAVE_HEIGHT, 60);
@@ -77,9 +79,9 @@
 		}
 		
 		private function moveDownHandler(e:MapEvent):void {
-			if(_tween != null && _tween.isPlaying) return;
+			if(_isMoving) return;
 			if(Game.currentGame.noAction) return;
-			if(!isBuilding(_globalLocation)){
+			if(!Map.isBuilding(_globalLocation)){
 				
 			} else {
 				if(Map.buildingFloor(_globalLocation) == 0 && Map.buildingIndex(_globalLocation) == _world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedRoom){
@@ -103,9 +105,10 @@
 			_world.setButton();
 			//장거리 이동도 가능하도록 수정하고 싶음, 뭔가 gloc이 바뀔때마다 이벤트가 발생해서 새로그리도록?
 			if(_tween != null && _tween.isPlaying) _tween.stop();
-			if(!isBuilding(_globalLocation)){
+			_isMoving = true;
+			if(!Map.isBuilding(_globalLocation)){
 				//동굴 내에서 좌우로 움직이는 트윈
-				_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -int(gloc)*World.CAVE_WIDTH, Math.abs((int(gloc)*World.CAVE_WIDTH+_world.backField.x))/Number(spd));
+				moveFields(-int(gloc)*World.CAVE_WIDTH, 0, Math.abs((int(gloc)*World.CAVE_WIDTH+_world.backField.x))/Number(spd));
 				_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 			} else {
 				if(vertical){
@@ -116,8 +119,8 @@
 							//빌딩 내에서 위로 올라가는 트윈
 							_world.character.goLeft();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goUp);
-							new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-300, 450/spd);
-							_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y+World.ROOM_HEIGHT, 450/spd);
+							moveFields(_world.backField.x, _world.backField.y+World.ROOM_HEIGHT, 450/spd);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-300, 450/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, _goRight);
 						}
 						function _goRight(e:TweenEvent):void {
@@ -133,12 +136,12 @@
 						function _goDown(e:TweenEvent):void {
 							_world.character.goRight();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goDown);
-							new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+300, 450/spd);
-							_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y-World.ROOM_HEIGHT, 450/spd);
+							moveFields(_world.backField.x, _world.backField.y-World.ROOM_HEIGHT, 450/spd);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+300, 450/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, _goLeft);
 						}
 						function _goLeft(e:TweenEvent):void {
-							_world.character.goLeft();
+							_world.character.goRight();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goLeft);
 							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-150, 150/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
@@ -146,7 +149,7 @@
 					}
 				} else {
 					//빌딩 내에서 좌우로 움직이는 트윈
-					_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, -Map.buildingIndex(gloc)*World.ROOM_WIDTH, Math.abs(Map.buildingIndex(gloc)*World.ROOM_WIDTH+_world.backField.x)/Number(spd));
+					moveFields(-Map.buildingIndex(gloc)*World.ROOM_WIDTH, _world.backField.y, Math.abs(Map.buildingIndex(gloc)*World.ROOM_WIDTH+_world.backField.x)/Number(spd));
 					_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 				}
 			}
@@ -159,8 +162,16 @@
 			_globalLocation = gloc;
 		}
 		
+		private function moveFields(desX:Number, desY:Number, time:Number):void {
+			_tween = new Tween(_world.backField, "x", None.easeNone, _world.backField.x, desX, time);
+			new Tween(_world.frontField, "x", None.easeNone, _world.frontField.x, desX, time);
+			new Tween(_world.backField, "y", None.easeNone, _world.backField.y, desY, time);
+			new Tween(_world.frontField, "y", None.easeNone, _world.frontField.y, desY, time);
+		}
+
+		
 		private function teleportTo(gloc){
-			if(!isBuilding(gloc)){
+			if(!Map.isBuilding(gloc)){
 				_world.backField.x = -int(gloc)*World.CAVE_WIDTH;
 				_world.backField.y = 0;
 			} else {
@@ -199,19 +210,20 @@
 		
 		private function tweenFinishHandler(e:TweenEvent):void {
 			_world.character.standStill();
-			if(!isBuilding(_globalLocation)){
-				_world.backField.x = -int(_globalLocation)*World.CAVE_WIDTH;
+			if(!Map.isBuilding(_globalLocation)){
+				_world.backField.x = _world.frontField.x = -int(_globalLocation)*World.CAVE_WIDTH;
 			} else {
-				_world.backField.x = -Map.buildingIndex(_globalLocation)*World.ROOM_WIDTH;
-				_world.backField.y = Map.buildingFloor(_globalLocation)*World.ROOM_HEIGHT;
+				_world.backField.x = _world.frontField.x = -Map.buildingIndex(_globalLocation)*World.ROOM_WIDTH;
+				_world.backField.y = _world.frontField.y = Map.buildingFloor(_globalLocation)*World.ROOM_HEIGHT;
 			}
 			_tween.removeEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
+			_isMoving = false;
 				
 		}
 		
 		private function setButtonOf(gloc:String):void {
 			var t:int;
-			if(!isBuilding(gloc)){
+			if(!Map.isBuilding(gloc)){
 				t = _world.map.caveAt(int(gloc)).x;
 			} else {
 				t = _world.map.buildingAt(Map.buildingNum(gloc)).roomAt(Map.buildingFloor(gloc), Map.buildingIndex(gloc)).x;
@@ -223,14 +235,24 @@
 		private function redrawFromTo(from:String = "$", to:String = "$"):void {
 			var _from:String = (from=="$"?_globalLocation:from), _to:String = (to=="$"?_globalLocation:to);
 			var i:int, j:int;
-			if(!isBuilding(_globalLocation)){
+			if(!Map.isBuilding(_globalLocation)){
+				//동굴그리기
 				for(i = 0; i < _world.map.caveLength; i++){
 					if(isCaveInRange(i, _from, _to))
 						_world.caves[i].visible = true;
 					else
 						_world.caves[i].visible = false;
 				}
+				//오브젝트 그리기
+				for(i = 0; i < _world.mapObjects.length; i++){
+					if(isCaveInRange(int(_world.mapObjects[i].globalLocation), _from, _to))
+						_world.mapObjects[i].clip.visible = true;
+					else
+						_world.mapObjects[i].clip.visible = false;
+				}
+				
 			} else {
+				//방 그리기
 				for(i = 0; i < _world.map.buildingAt(Map.buildingNum(_globalLocation)).buildingHeight; i++){
 					for(j = 0; j < _world.map.buildingAt(Map.buildingNum(_globalLocation)).buildingWidth; j++){
 						if(isRoomInRange(i, j, _from, to))
@@ -238,6 +260,13 @@
 						else
 							_world.buildings[Map.buildingNum(_globalLocation)][i][j].visible = false;
 					}
+				}
+				//오브젝트 그리기
+				for(i = 0; i < _world.mapObjects.length; i++){
+					if(isRoomInRange(Map.buildingFloor(_world.mapObjects[i].globalLocation), Map.buildingIndex(_world.mapObjects[i].globalLocation), _from, _to))
+						_world.mapObjects[i].clip.visible = true;
+					else
+						_world.mapObjects[i].clip.visible = false;
 				}
 				
 				if(Map.buildingFloor(_from) > Map.buildingFloor(_to)) j = Map.buildingFloor(_to);
@@ -302,19 +331,8 @@
 			return (i>_small-1&&i<_large+5);
 		}
 		
-		private function isBuilding(gloc:String):Boolean {
-			var flag:Boolean = false;
-			for(var i:int = 0; i < gloc.length; i++){
-				if(gloc.charAt(i) == ":"){
-					flag = true;
-					break;
-				}
-			}
-			return flag;
-		}
-		
 		public function goto(gloc:String, spd:int):Boolean {
-			if(!isBuilding(gloc)){
+			if(!Map.isBuilding(gloc)){
 				if(_world.map.caveLength <= int(gloc)) return false;
 				else {
 					moveTo(gloc, spd);
@@ -335,11 +353,11 @@
 		}
 		
 		private function isValid(gloc:String):Boolean {
-			if(!isBuilding(gloc)){
+			if(!Map.isBuilding(gloc)){
 				if(gloc != String(int(gloc))) return false;
 				if(_world.map.caveLength <= int(gloc)) return false;
 			}
-			else if(isBuilding(gloc)) {
+			else if(Map.isBuilding(gloc)) {
 				var flag1:Boolean = false, flag2:Boolean = false;
 				for(var i:int = 0; i < gloc.length; i++) {
 					if(gloc.charAt(i) == ":") flag1 = true;
@@ -361,29 +379,6 @@
 		public function get caveLength():int {
 			return _world.map.caveLength;
 		}
-		
-		/*
-		//from MapObjects.as
-		
-		public function removeItemAt(index:int):void {
-			_objects[index]._isExisting = false;
-			if(_objects[index].clip != null) this.removeChild(_objects[index].clip);
-			redraw(_currentGlobal);
-		}
-		
-		public function redraw(globalLocation:String):void {
-			for each(var clip:MovieClip in _currentlyVisibleClips)
-				clip.visible = false;
-			
-			for each(var object:MapObjectInfo in _objects){
-				if( object.isNear(_currentGlobal) ){
-					if( object.clip != null ){
-						object.clip.visible = true;
-					}
-				}
-			}
-		}*/
-
 	}
 	
 }

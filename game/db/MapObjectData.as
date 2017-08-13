@@ -1,16 +1,17 @@
 ﻿package game.db {
 	import flash.display.MovieClip;
+	import flash.utils.getDefinitionByName;
 	
 	public class MapObjectData {
 		
-		internal var _objectCode:int, _clip:MovieClip, _interactionable:Boolean;
+		internal var _objectCode:int, _clip:String, _interactionable:Boolean;
 		
 		public function get objectCode():int {
 			return _objectCode;
 		}
 		
 		public function get clip():MovieClip {
-			return _clip;
+			return new (Class(getDefinitionByName(_clip)))();
 		}
 		
 		public function get interactionable():Boolean {

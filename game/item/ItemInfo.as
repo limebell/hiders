@@ -5,10 +5,13 @@
 	public class ItemInfo {
 		private var _data:ItemData, _number:int, _durability:int;
 		
-		public function ItemInfo(data:ItemData, number:int, durability:int) {
+		public function ItemInfo(data:ItemData, number:int) {
 			_data = data;
 			_number = number;
-			_durability = durability;
+		}
+		
+		public function get data():ItemData {
+			return _data;
 		}
 		
 		public function get itemCode():int {
@@ -25,10 +28,6 @@
 		
 		public function get itemClass():String {
 			return _data.itemClass;
-		}
-		
-		public function get maxDurability():int {
-			return _data.durability;
 		}
 		
 		public function get weight():int {

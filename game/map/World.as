@@ -5,6 +5,8 @@
 	import game.core.Game;
 	import game.event.MapEvent;
 	import flash.text.TextField;
+	import game.db.MapObjectDB;
+	import flash.geom.Point;
 	
 	public class World extends MovieClip {
 		public static const
@@ -24,7 +26,6 @@
 		private var _buildings:Array;
 		private var _buildingFloors:Array;
 		private var _backField:MovieClip;
-		private var _objectsClip:MovieClip;
 		private var _mapObjects:Vector.<MapObjectInfo>;
 		private var _frontField:MovieClip;
 		private var _moveButtons:MovieClip;
@@ -141,7 +142,19 @@
 			
 			//initiating character, mapObject, and rendering backField and mapObjects
 			_backField = new MovieClip();
-			_objectsClip = new MovieClip();
+			_frontField = new MovieClip();
+			_mapObjects = new Vector.<MapObjectInfo>();
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(0, 200), true, true));
+			for(i = 0; i < _mapObjects.length; i++){
+				//바닥이 기준점
+				if(Map.isBuilding(_mapObjects[i].globalLocation)){
+					_mapObjects[i].clip.x = Map.buildingIndex(_mapObjects[i].globalLocation)*ROOM_WIDTH+_mapObjects[i].localLocation.x;
+					_mapObjects[i].clip.y = Map.buildingFloor(_mapObjects[i].globalLocation)*ROOM_HEIGHT+_mapObjects[i].localLocation.y;
+				} else {
+					_mapObjects[i].clip.x = int(_mapObjects[i].globalLocation)*CAVE_WIDTH + _mapObjects[i].localLocation.x;
+					_mapObjects[i].clip.y = _mapObjects[i].localLocation.y;
+				}
+			}
 			renderField("0");
 			
 			//initiating moveButtnos
@@ -163,7 +176,6 @@
 			_moveButtons.addChild(_moveButtons.downbtn);
 			
 			this.addChild(_backField);
-			this.addChild(_objectsClip);
 			this.addChild(_character);
 			this.addChild(_frontField);
 			this.addChild(_moveButtons);
@@ -192,10 +204,11 @@
 			if(buildingNum(gloc) == -1) _character.y = CAVE_CHARACTER_Y;
 			else _character.y = BUILDING_CHARACTER_Y;
 			
+			for(i = backField.numChildren; i > 0; i--) backField.removeChildAt(0);
+			for(i = frontField.numChildren; i > 0; i--) frontField.removeChildAt(0);
+			
 			//rendering backField
 			var i:int, j:int, k:int, t:int, tb:Building;
-			t = backField.numChildren;
-			for(i = 0; i < t; i++) backField.removeChildAt(0);
 			if(buildingNum(gloc) == -1){
 				for(i = 0; i < _map.caveLength; i++){
 					_backField.addChild(_caves[i]);
@@ -217,13 +230,16 @@
 			}
 			
 			//rendering mapObjects
-			for(i = 0; i < _objectsClip.numChildren; i++) _objectsClip.removeChildAt(0);
-			_mapObjects = new Vector.<MapObjectInfo>();
 			for each(var object:MapObjectInfo in _mapObjects){
-				if(object.clip != null){
-					_objectsClip.addChild(object.clip);
-					object.clip.visible = false;
+				if(object.clip == null) continue;
+
+				if(buildingNum(object.globalLocation) == buildingNum(gloc)){
+					if(object.isFront)
+						_frontField.addChild(object.clip);
+					else
+						_backField.addChild(object.clip);
 				}
+				object.clip.visible = false;
 			}
 		}
 		
@@ -288,10 +304,6 @@
 		
 		public function get backField():MovieClip {
 			return _backField;
-		}
-		
-		public function get objectsClip():MovieClip {
-			return objectsClip;
 		}
 		
 		public function get mapObjects():Vector.<MapObjectInfo> {

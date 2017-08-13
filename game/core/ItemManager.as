@@ -13,6 +13,7 @@
 	import game.db.ItemData;
 	import game.db.DecomposeData;
 	import flash.errors.IllegalOperationError;
+	import game.db.Consumable;
 	
 	public class ItemManager extends EventDispatcher {
 		private var _inventory:Inventory;
@@ -42,7 +43,7 @@
 					_ui.recipeField.recipes[i].vec[j].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+j);
 					_ui.recipeField.recipes[i].vec[j].clip.y = 30;
 					_ui.recipeField.recipes[i].clip.addChild(_ui.recipeField.recipes[i].vec[j].clip);
-					//_ui.recipeField.recipes[i].clip.visible = false;
+					_ui.recipeField.recipes[i].clip.visible = false;
 				}
 			}
 			
@@ -71,25 +72,6 @@
 			this.addEventListener(InventoryEvent.ITEM_CRAFT, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.ITEM_DECOMPOSE, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.CHECKBOX, inventoryEventHandler);
-		}
-		
-		public function achieveItem(code:int, amount:int = 1):void {
-			var flag:Boolean = true, info:ItemInfo;
-			for(var i:int = 0; i < _inventory.numItems; i++){
-				if(_inventory.itemAt(i).itemCode == code){
-					_inventory.addAmountAt(i, amount);
-					flag = false;
-					break;
-				}
-			}
-			if(flag){
-				info = new ItemInfo(ItemDB.getItem(code), amount, ItemDB.getItem(code).durability);
-				_ui.items.push(_ui.newItem(info.clip));
-				_inventory.addItem(info);
-				_ui.itemField.addChild(_ui.items[i].clip);
-				_ui.items[i].btn.addEventListener(MouseEvent.CLICK, clickHandler);
-			}
-			if(_ui.visible) refreshInventoryUI();
 		}
 		
 		private function clickHandler(e:MouseEvent):void {
@@ -138,6 +120,8 @@
 					break;
 				
 				case InventoryEvent.ITEM_USE:
+					if(_selectedItem == -1) return;
+					useItem(_selectedItem);
 					break;
 				
 				case InventoryEvent.ITEM_DUMP:
@@ -147,7 +131,7 @@
 				
 				case InventoryEvent.ITEM_CRAFT:
 					if(_selectedItem == -1 || !craftable(_selectedItem)) return;
-					craft(_selectedItem);
+					craftItem(_selectedItem);
 					_ui.removeSelect(_selectedItem);
 					_prevSelectedItem = _selectedItem = -1
 					refreshInventoryUI();
@@ -155,7 +139,7 @@
 				
 				case InventoryEvent.ITEM_DECOMPOSE:
 					if(_selectedItem == -1 || decomposeIndex(_inventory.itemAt(_selectedItem).itemCode) == -1) return;
-					decompose(_selectedItem);
+					decomposeItem(_selectedItem);
 					_ui.removeSelect(_selectedItem);
 					_prevSelectedItem = _selectedItem = -1
 					refreshInventoryUI();
@@ -191,7 +175,15 @@
 			return ret;
 		}
 		
-		private function craft(index:int):void {
+		private function useItem(index:int):void {
+			if(_inventory.itemAt(index).itemClass != ItemDB.CONSUMABLE) return;
+			var item:Consumable = Consumable(_inventory.itemAt(index).data);
+			Game.currentGame.statusManager.add(StatusManager.CUR_HP, item.hp);
+			Game.currentGame.statusManager.add(StatusManager.CUR_HP, item.st);
+			removeItemAt(index);
+		}
+		
+		private function craftItem(index:int):void {
 			var i:int, j:int, data:CraftData;
 			data = ItemDB.getCraftRecipeAt(index);
 			for(i = 0; i < data.recipe.length; i++){
@@ -205,7 +197,7 @@
 			achieveItem(data.itemCode);
 		}
 		
-		private function decompose(index:int):void {
+		private function decomposeItem(index:int):void {
 			var i:int, data:DecomposeData;
 			if(decomposeIndex(_inventory.itemAt(index).itemCode) == -1) throw new IllegalOperationError("잘못된 분해입니다");
 			data = ItemDB.getDecomposeRecipeAt(decomposeIndex(_inventory.itemAt(index).itemCode));
@@ -225,6 +217,7 @@
 		public function refreshInventoryUI():void {
 			var i:int, j:int, count:int, data:ItemData;
 			_ui.selectItem(_prevSelectedItem, _selectedItem);
+			count = 0;
 			
 			for(i = 0; i < ItemDB.getNumCraftRecipe()+ItemDB.getNumDecomposeRecipe(); i++)
 				_ui.recipeField.recipes[i].clip.visible = false;
@@ -242,6 +235,13 @@
 						_ui.description = _inventory.itemAt(i).itemName+"/"+_inventory.itemAt(i).description;
 					}
 				}
+				var stm:StatusManager = Game.currentGame.statusManager;
+				_ui.statusText = "HP : "+stm.getStatus(StatusManager.CUR_HP)+"/"+stm.getStatus(StatusManager.MAX_HP)+"\n"
+								+"ST : "+stm.getStatus(StatusManager.CUR_ST)+"/"+stm.getStatus(StatusManager.MAX_ST)+"\n"
+								+"ATK : "+stm.getStatus(StatusManager.ATK)+"\n"
+								+"DEF : "+stm.getStatus(StatusManager.DEF)+"\n"
+								+"Weight : ";
+				
 			} else if(_ui.state == InventoryUI.CRAFT){
 				//state == craft
 				count = 0;
@@ -286,7 +286,7 @@
 		}
 		
 		public function numItem(itemCode:int):int {
-			//return amount of itemCode. if don't have, return 0
+			//return amount of item which has itemcode of itemCode. if any, return 0
 			var i:int, num:int = 0;
 			for(i = 0; i < _inventory.numItems; i++){
 				if(_inventory.itemAt(i).itemCode == itemCode){
@@ -295,6 +295,26 @@
 				}
 			}
 			return num;
+		}
+		
+		public function achieveItem(code:int, amount:int = 1):void {
+			//item 획득
+			var flag:Boolean = true, info:ItemInfo;
+			for(var i:int = 0; i < _inventory.numItems; i++){
+				if(_inventory.itemAt(i).itemCode == code){
+					_inventory.addAmountAt(i, amount);
+					flag = false;
+					break;
+				}
+			}
+			if(flag){
+				info = new ItemInfo(ItemDB.getItem(code), amount);
+				_ui.items.push(_ui.newItem(info.clip));
+				_inventory.addItem(info);
+				_ui.itemField.addChild(_ui.items[i].clip);
+				_ui.items[i].btn.addEventListener(MouseEvent.CLICK, clickHandler);
+			}
+			if(_ui.visible) refreshInventoryUI();
 		}
 		
 		public function removeItemAt(index:int, amount:int = 1):void {

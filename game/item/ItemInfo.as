@@ -1,5 +1,7 @@
 ﻿package game.item {
 	import game.db.ItemData;
+	import game.db.*;
+	
 	import flash.display.MovieClip;
 	
 	public class ItemInfo {
@@ -26,7 +28,7 @@
 			return _data.description;
 		}
 		
-		public function get itemClass():String {
+		public function get itemClass():uint {
 			return _data.itemClass;
 		}
 		
@@ -42,7 +44,11 @@
 			return _number;
 		}
 		
-		public function get durability():int {
+		public function get maxDurability():int {
+			return Tool(_data).durability;
+		}
+		
+		public function get curDurability():int {
 			return _durability;
 		}
 		
@@ -50,7 +56,7 @@
 			_number = num;
 		}
 		
-		public function set durability(num:int):void {
+		public function set curDurability(num:int):void {
 			_durability = num;
 		}
 

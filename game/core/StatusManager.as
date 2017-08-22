@@ -163,6 +163,34 @@
 			refresh();
 		}
 		
+		public function getStatus(tar:String):int {
+			var val:int = -1;
+			switch(tar){
+				case ATK:
+					val = _atk;
+					break;
+				case DEF:
+					val = _def;
+					break;
+				case MAX_HP:
+					val = _finalMaxHP;
+					break;
+				case MAX_ST:
+					val = _finalMaxST;
+					break;
+				case CUR_HP:
+					val = _curHP;
+					break;
+				case CUR_ST:
+					val = _curST;
+					break;
+				default:
+					throw new IllegalOperationError("getStatus : 잘못된 대상입니다");
+					break;
+			}
+			return val;
+		}
+		
 		private function adjustSkill():void {
 			if(CharacterDB.getCharacterAt(Game.currentGame.character).skill.skillCode == 0) _finalMaxHP = int(_realMaxHP*1.1);
 			else _finalMaxHP = _realMaxHP;
@@ -178,10 +206,11 @@
 			_ui.stTxt = _curST+"/"+_finalMaxST;
 		}
 		
-		public function get status():String {
+		public function get statusForConsole():String {
 			return "ATK : "+_atk+", DEF : "+_def+", realMaxHP : "+_realMaxHP+", finalMaxHP : "+_finalMaxHP+", curHP : "+_curHP+
 				", realMaxST : "+_realMaxST+", finalMaxST : "+_finalMaxST+", curST : "+_curST;
 		}
+		
 	}
 	
 }

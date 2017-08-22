@@ -5,14 +5,23 @@
 	
 	public class MapObjectInfo {
 		
-		internal var _data:MapObjectData, _globalLocation:String, _localLocation:Point, _isExisting:Boolean;
+		private var _data:MapObjectData, _clip:MovieClip, _globalLocation:String, _localLocation:Point, _isFront:Boolean, _isExisting:Boolean;
+		
+		public function MapObjectInfo(data:MapObjectData, globalLocation:String, localLocation:Point, isFront:Boolean, isExisting:Boolean) {
+			_data = data;
+			_clip = _data.clip;
+			_globalLocation = globalLocation;
+			_localLocation = localLocation;
+			_isFront = isFront;
+			_isExisting = isExisting;
+		}
 		
 		public function get objectCode():int {
 			return _data.objectCode;
 		}
 		
 		public function get clip():MovieClip {
-			return _data.clip;
+			return _clip;
 		}
 		
 		public function get interactionable():Boolean {
@@ -27,8 +36,16 @@
 			return _localLocation;
 		}
 		
+		public function get isFront():Boolean {
+			return _isFront;
+		}
+		
 		public function get isExisting():Boolean {
 			return _isExisting;
+		}
+		
+		public function set isExisting(b:Boolean):void {
+			_isExisting = b;
 		}
 		
 		public function isNear(target:String):Boolean {

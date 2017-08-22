@@ -67,6 +67,17 @@
 			return Boolean(tar%2);
 		}
 		
+		public static function isBuilding(tar:String):Boolean {
+			var flag:Boolean = false;
+			for(var i:int = 0; i < tar.length; i++){
+				if(tar.charAt(i) == ":"){
+					flag = true;
+					break;
+				}
+			}
+			return flag;
+		}
+		
 		public static function buildingNum(gloc:String):int {
 			var i:int, num:int = -1;
 			for(i = 0; i < gloc.length; i++){

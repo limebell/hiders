@@ -34,7 +34,7 @@
 		private var _itemManager:ItemManager;
 		private var _interectionManager:InterectionManager;
 		
-		private var _characterIndex:int;
+		private var _jobIndex:int;
 		
 		public function Game(root:MovieClip, loadData:Object=null) {
 			currentGame = this;
@@ -59,9 +59,9 @@
 		
 		private function initGame():Boolean {
 			if(_data == null){
-				if(_root.characterSelectUI == null) return false;
+				if(_root.jobSelectUI == null) return false;
 				
-				_characterIndex = _root.characterSelectUI.index;
+				_jobIndex = _root.jobSelectUI.index;
 				
 				_map = new Map();
 				return true;
@@ -76,11 +76,11 @@
 		private function startGame():void {
 			_noAction = false;
 			
-			_world = new World(new Character(_characterIndex), _map);
+			_world = new World(new Character(_jobIndex), _map);
 			_mapManager = new MapManager(_world);
 				
 			_ui = new GameplayUI();
-			_statusManager = new StatusManager(_ui, true, _characterIndex);
+			_statusManager = new StatusManager(_ui, true, _jobIndex);
 			_itemManager = new ItemManager(_ui.inventoryUI);
 			_interectionManager = new InterectionManager();
 			
@@ -104,8 +104,8 @@
 			_root.mc_cursor.gotoAndStop(state);
 		}
 		
-		public function get character():int {
-			return _characterIndex;
+		public function get job():int {
+			return _jobIndex;
 		}
 		
 		public function get itemManager():ItemManager {

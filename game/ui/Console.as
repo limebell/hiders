@@ -24,8 +24,8 @@
 		public function Console() {
 			_clip = new consoleUIClip();
 			
-			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0xffffff);
-			_msgFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0x666666, null, true);
+			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 10, 0xffffff);
+			_msgFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 10, 0x666666, null, true);
 			
 			_outputText = new TextField();
 			_inputText = new TextField();
@@ -35,17 +35,15 @@
 			_inputText.type = "input";
 			_outputText.selectable = true;
 			_outputText.wordWrap = true;
-			//_outputText.antiAliasType = _inputText.antiAliasType = AntiAliasType.ADVANCED;
-			//_outputText.gridFitType = _inputText.gridFitType = GridFitType.SUBPIXEL;
 			
 			_inputText.restrict = "^`";
 			
-			_outputText.width = _inputText.width = 900;
-			_outputText.height = 450;
+			_outputText.width = _inputText.width = 450;
+			_outputText.height = 225;
 			
-			_outputText.x = _inputText.x = -450;
-			_outputText.y = -255;
-			_inputText.y = 215;
+			_outputText.x = _inputText.x = -225;
+			_outputText.y = -127.5;
+			_inputText.y = 107.5;
 			
 			this.addChild(_clip);
 			this.addChild(_outputText);

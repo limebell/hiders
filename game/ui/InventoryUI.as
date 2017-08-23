@@ -14,8 +14,8 @@
 		INVENTORY:String = "inventory",
 		CRAFT:String = "craft",
 		DECOMPOSE:String = "decompose",
-		ITEM_WIDTH:int = 50,
-		ITEM_HEIGHT:int = 50,
+		ITEM_WIDTH:int = 25,
+		ITEM_HEIGHT:int = 25,
 		MAX_XNUM:int = 11;
 		
 		private var _state:String;
@@ -48,49 +48,49 @@
 		public function InventoryUI() {
 			_clip = new inventoryUIClip();
 			
-			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 40, 0xffffff);
+			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 20, 0xffffff);
 			
 			_typeText = new TextField();
 			_typeText.defaultTextFormat = _textFormat;
-			_typeText.x = -480;
-			_typeText.y = -285;
+			_typeText.x = -240;
+			_typeText.y = -142.5;
 			_typeText.mouseEnabled = false;
-			_typeText.width = 300;
+			_typeText.width = 150;
 			
-			_textFormat.size = 20;
+			_textFormat.size = 10;
 			_textFormat.align = "center";
-			_textFormat.leading = 2;
+			_textFormat.leading = 1;
 			
-			_inventoryButton = newButton("인벤토리", -450, -40);
-			_craftButton = newButton("조합", -350, -40);
-			_decomposeButton = newButton("분해", -250, -40);
-			_useButton = newButton("사용하기", 250, 210);
-			_dumpButton = newButton("버리기", 350, 210);
-			_craftConfirmButton = newButton("조합하기", 250, 210, 200);
-			_decomposeConfirmButton = newButton("분해하기", 250, 210, 200);
+			_inventoryButton = newButton("인벤토리", -225, -20, 50);
+			_craftButton = newButton("조합", -175, -20, 50);
+			_decomposeButton = newButton("분해", -125, -20, 50);
+			_useButton = newButton("사용하기", 125, 105, 50);
+			_dumpButton = newButton("버리기", 175, 105, 50);
+			_craftConfirmButton = newButton("조합하기", 125, 105, 100);
+			_decomposeConfirmButton = newButton("분해하기", 125, 105, 100);
 			
 			_closeButton = new button();
-			_closeButton.width = _closeButton.height = 50;
-			_closeButton.x = 475;
-			_closeButton.y = -275
+			_closeButton.width = _closeButton.height = 25;
+			_closeButton.x = 237.5;
+			_closeButton.y = -137.5;
 			_closeButton.addEventListener(MouseEvent.CLICK, clickHandler);
 			
 			_explanationText = new TextField();
 			_textFormat.align = "left";
-			_textFormat.size = 20;
+			_textFormat.size = 10;
 			_explanationText.defaultTextFormat = _textFormat;
-			_explanationText.width = 200;
-			_explanationText.height = 210;
+			_explanationText.width = 100;
+			_explanationText.height = 105;
 			_explanationText.mouseEnabled = false;
 			_explanationText.wordWrap = true;
-			_explanationText.x = 250;
+			_explanationText.x = 125;
 			
 			_itemField = new MovieClip();
-			_itemField.x = -450;
+			_itemField.x = -225;
 			_fieldMask = new MovieClip();
 			_fieldMask.graphics.beginFill(0xffffff);
-			_fieldMask.graphics.drawRect(0, 0, 698, 248);
-			_fieldMask.x = -449;
+			_fieldMask.graphics.drawRect(0, 0, 348, 123);
+			_fieldMask.x = -224;
 			_fieldMask.y = 1;
 			_items = new Vector.<Object>();
 			_classificationBars = new Vector.<MovieClip>();
@@ -107,27 +107,27 @@
 			_classificationBars[0].visible = _classificationBars[1].visible = _classificationBars[2].visible = _classificationBars[3].visible = _classificationBars[4].visible = false;
 			
 			_craftField = new MovieClip();
-			_craftField.x = -450;
+			_craftField.x = -225;
 			_craftItems = new Vector.<Object>();
 			
 			_equipField = new Object();
 			_equipField.clip = new MovieClip();
 			_equipField.human = new human();
-			_equipField.head = newEquipField(-30, -120);
-			_equipField.arm = newEquipField(-100, -20);
-			_equipField.body = newEquipField(-30, -40);
-			_equipField.weapon = newEquipField(40, -20);
-			_equipField.leg = newEquipField(-30, 70);
+			_equipField.head = newEquipField(-15, -60);
+			_equipField.arm = newEquipField(-50, -10);
+			_equipField.body = newEquipField(-15, -20);
+			_equipField.weapon = newEquipField(20, -10);
+			_equipField.leg = newEquipField(-15, 35);
 			_equipField.statusText = new TextField();
 			_equipField.statusText.mouseEnabled = false;
 			_textFormat.align = "left";
-			_textFormat.size = "15";
+			_textFormat.size = 8;
 			_equipField.statusText.defaultTextFormat = _textFormat;
-			_equipField.statusText.x = -450;
-			_equipField.statusText.y = -50;
-			_equipField.statusText.width = 300;
-			_equipField.statusText.height = 120;
-			_equipField.clip.y = -150;
+			_equipField.statusText.x = -225;
+			_equipField.statusText.y = -25;
+			_equipField.statusText.width = 150;
+			_equipField.statusText.height = 60;
+			_equipField.clip.y = -75;
 			_equipField.clip.addChild(_equipField.statusText);
 			_equipField.clip.addChild(_equipField.human);
 			_equipField.clip.addChild(_equipField.head);
@@ -141,16 +141,17 @@
 			_possibleOnly.clip = new MovieClip();
 			_possibleOnly.tf = new TextField();
 			_textFormat.align = "left";
-			_textFormat.size = "15";
+			_textFormat.size = 8;
 			_possibleOnly.tf.defaultTextFormat = _textFormat;
-			_possibleOnly.tf.width = 175;
+			_possibleOnly.tf.width = 90;
+			_possibleOnly.tf.y = -2;
 			_possibleOnly.tf.mouseEnabled = false;
 			_possibleOnly.tf.text = "조합 가능한 아이템만 보기";
 			_possibleOnly.checkBox = new checkBox();
 			_possibleOnly.checkBox.x = _possibleOnly.tf.width;
 			_possibleOnly.checkBox.y = _possibleOnly.checkBox.height/2;
-			_possibleOnly.clip.x = 65;
-			_possibleOnly.clip.y = -20;
+			_possibleOnly.clip.x = 30;
+			_possibleOnly.clip.y = -10;
 			_possibleOnly.clip.addChild(_possibleOnly.tf);
 			_possibleOnly.clip.addChild(_possibleOnly.checkBox);
 			_possibleOnly.checkBox.addEventListener(MouseEvent.CLICK, clickHandler);
@@ -159,16 +160,16 @@
 			_recipeField = new Object();
 			_recipeField.clip = new MovieClip();
 			_recipeField.clip.graphics.lineStyle(1, 0xffffff);
-			_recipeField.clip.graphics.drawRect(0, 0, 400, 60);
-			_recipeField.clip.x = -200;
-			_recipeField.clip.y = -150;
+			_recipeField.clip.graphics.drawRect(0, 0, 200, 30);
+			_recipeField.clip.x = -100;
+			_recipeField.clip.y = -75;
 			_recipeField.tf = new TextField();
 			_textFormat.align = "left";
-			_textFormat.size = "20";
+			_textFormat.size = 10;
 			_recipeField.tf.defaultTextFormat = _textFormat;
 			_recipeField.tf.autoSize = "left";
 			_recipeField.tf.mouseEnabled = false;
-			_recipeField.tf.y = -25;
+			_recipeField.tf.y = -14;
 			_recipeField.recipes = new Vector.<Object>;
 			_recipeField.clip.addChild(_recipeField.tf);
 			_recipeField.clip.visible = false;
@@ -196,22 +197,22 @@
 			this.addEventListener(MouseEvent.MOUSE_WHEEL, wheelHandler);
 		}
 		
-		private function newButton(t:String, x:int, y:int, width:int = 100):Object {
+		private function newButton(t:String, x:int, y:int, width:int):Object {
 			var obj:Object = new Object();
 			obj.clip = new MovieClip();
 			obj.clip.graphics.lineStyle(1, 0xffffff);
-			obj.clip.graphics.drawRect(0, 0, width, 40);
+			obj.clip.graphics.drawRect(0, 0, width, 20);
 			obj.clip.x = x;
 			obj.clip.y = y;
 			obj.tf = new TextField();
 			obj.tf.defaultTextFormat = _textFormat;
 			obj.tf.mouseEnabled = false;
 			obj.tf.width = width;
-			obj.tf.y = 7;
+			obj.tf.y = 2.5;
 			obj.tf.text = t;
 			obj.btn = new button();
 			obj.btn.width = width;
-			obj.btn.height = 40;
+			obj.btn.height = 20;
 			obj.btn.x = obj.btn.width/2;
 			obj.btn.y = obj.btn.height/2;
 			obj.clip.addChild(obj.tf);
@@ -223,7 +224,7 @@
 		private function newEquipField(x:int, y:int):MovieClip {
 			var mc:MovieClip = new MovieClip();
 			mc.graphics.lineStyle(1, 0xffffff);
-			mc.graphics.drawRect(0, 0, 60, 60);
+			mc.graphics.drawRect(0, 0, 30, 30);
 			mc.x = x;
 			mc.y = y;
 			return mc;
@@ -280,23 +281,23 @@
 			var obj:Object = new Object();
 			obj.clip = clip;
 			obj.btn = new button();
-			obj.btn.width = obj.btn.height = 50;
+			obj.btn.width = obj.btn.height = 25;
 			obj.select = new MovieClip();
 			obj.select.graphics.lineStyle(1, 0xfcf291);
-			obj.select.graphics.drawRect(-27, -27, 54, 54);
+			obj.select.graphics.drawRect(-14, -14, 28, 28);
 			obj.select.visible = false;
 			obj.tf = new TextField();
 			obj.tf.mouseEnabled = false;
 			_textFormat.align = "right";
-			_textFormat.size = 15;
-			obj.tf.x = -20;
-			obj.tf.y = 10;
-			obj.tf.width = 50;
-			obj.tf.height = 20;
+			_textFormat.size = 8;
+			obj.tf.x = -10;
+			obj.tf.y = 4;
+			obj.tf.width = 25;
+			obj.tf.height = 12;
 			obj.tf.defaultTextFormat = _textFormat;
 			if(itemClass == ItemDB.TOOL){
 				obj.bar = new durabilityClip();
-				obj.bar.y = 25;
+				obj.bar.y = 12.5;
 				obj.clip.addChild(obj.bar);
 			}
 			obj.clip.addChild(obj.tf);
@@ -381,7 +382,7 @@
 				case 0:
 					_explanationText.text = text;
 					_textFormat.align = "center";
-					_textFormat.size = 15;
+					_textFormat.size = 8;
 					_explanationText.setTextFormat(_textFormat, 0, text.length-1);
 					break;
 				
@@ -395,7 +396,7 @@
 					}
 					_explanationText.text = temp1+"\n"+temp2;
 					_textFormat.align = "left";
-					_textFormat.size = 15;
+					_textFormat.size = 8;
 					_explanationText.setTextFormat(_textFormat, temp1.length+1, _explanationText.length-1);
 					break;
 					
@@ -415,9 +416,9 @@
 					}
 					_explanationText.text = temp1+"\n"+temp2+"\n"+temp3;
 					_textFormat.align = "left";
-					_textFormat.size = 12;
+					_textFormat.size = 6;
 					_explanationText.setTextFormat(_textFormat, temp1.length+1, temp1.length+temp2.length+1);
-					_textFormat.size = 15;
+					_textFormat.size = 8;
 					_explanationText.setTextFormat(_textFormat, temp1.length+temp2.length+2, _explanationText.length-1);
 					break;
 			}

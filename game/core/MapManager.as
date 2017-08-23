@@ -11,7 +11,7 @@
 	
 	public class MapManager extends EventDispatcher {
 		private const
-		SPD_HOR:int = 10;
+		SPD_HOR:int = 5;
 		
 		private var _world:World;
 		private var _globalLocation:String;
@@ -116,37 +116,37 @@
 			} else {
 				if(vertical){
 					if(Map.buildingFloor(gloc)>Map.buildingFloor(_globalLocation)){
-						_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+150, 150/spd);
+						_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+75, 75/spd);
 						_tween.addEventListener(TweenEvent.MOTION_FINISH, _goUp);
 						function _goUp(e:TweenEvent):void {
 							//빌딩 내에서 위로 올라가는 트윈
 							_world.character.goLeft();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goUp);
-							moveFields(_world.backField.x, _world.backField.y+World.ROOM_HEIGHT, 450/spd);
-							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-300, 450/spd);
+							moveFields(_world.backField.x, _world.backField.y+World.ROOM_HEIGHT, 225/spd);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-150, 225/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, _goRight);
 						}
 						function _goRight(e:TweenEvent):void {
 							_world.character.goRight();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goRight);
-							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+150, 150/spd);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+75, 75/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 						}
 					} else {
 						//빌딩 내에서 아래로 내려오는 트윈
-						_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-150, 150/spd);
+						_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-75, 75/spd);
 						_tween.addEventListener(TweenEvent.MOTION_FINISH, _goDown);
 						function _goDown(e:TweenEvent):void {
 							_world.character.goRight();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goDown);
-							moveFields(_world.backField.x, _world.backField.y-World.ROOM_HEIGHT, 450/spd);
-							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+300, 450/spd);
+							moveFields(_world.backField.x, _world.backField.y-World.ROOM_HEIGHT, 225/spd);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x+150, 225/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, _goLeft);
 						}
 						function _goLeft(e:TweenEvent):void {
 							_world.character.goRight();
 							_tween.removeEventListener(TweenEvent.MOTION_FINISH, _goLeft);
-							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-150, 150/spd);
+							_tween = new Tween(_world.character, "x", None.easeNone, _world.character.x, _world.character.x-75, 75/spd);
 							_tween.addEventListener(TweenEvent.MOTION_FINISH, tweenFinishHandler);
 						}
 					}

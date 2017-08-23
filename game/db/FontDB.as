@@ -5,13 +5,13 @@
 	public class FontDB {
 		private static var fonts:Object;
 		public static const
-		HYShin:String = "hy_shin",
-		NBareun:String = "nanumbareunlight";
+		NBareun:String = "nanumbareunlight",
+		NPen:String = "nanumpen";
 
 		{
 			fonts = new Object();
-			fonts.hy_shin = new Font_HYShin();
 			fonts.nanumbareunlight = new Font_NanumbareunLight();
+			fonts.nanumpen = new Font_Nanumpen();
 		}
 		
 		public static function getFontName(font:String):String {

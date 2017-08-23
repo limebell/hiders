@@ -1,7 +1,7 @@
 ﻿package game.core {
 	import game.ui.GameplayUI;
-	import game.db.CharacterDB;
-	import game.db.CharacterData;
+	import game.db.JobDB;
+	import game.db.JobData;
 	
 	import flash.events.EventDispatcher;
 	import flash.errors.IllegalOperationError;
@@ -18,7 +18,7 @@
 		CUR_ST:String = "curST";
 		//ST for stamina
 		
-		private var _tempData:CharacterData;
+		private var _tempData:JobData;
 		private var _ui:GameplayUI;
 		
 		private var _tweenHP:Tween;
@@ -35,10 +35,10 @@
 		private var _curST:int;
 		
 		
-		public function StatusManager(ui:GameplayUI, isNew:Boolean, charIndex:int, atk:int = -1, def:int = -1, maxHP:int = -1, maxST:int = -1, curHP:int = -1, curST:int = -1) {
+		public function StatusManager(ui:GameplayUI, isNew:Boolean, jobIndex:int, atk:int = -1, def:int = -1, maxHP:int = -1, maxST:int = -1, curHP:int = -1, curST:int = -1) {
 			_ui = ui;
 			if(isNew){
-				_tempData = CharacterDB.getCharacterAt(charIndex);
+				_tempData = JobDB.getJobAt(jobIndex);
 				_atk = _tempData.baseATK;
 				_def = _tempData.baseDEF;
 				_realMaxHP = _tempData.baseHP;
@@ -192,8 +192,8 @@
 		}
 		
 		private function adjustSkill():void {
-			if(CharacterDB.getCharacterAt(Game.currentGame.character).skill.skillCode == 0) _finalMaxHP = int(_realMaxHP*1.1);
-			else _finalMaxHP = _realMaxHP;
+			/*if(JobDB.getJobAt(Game.currentGame.character).skill.skillCode == 0) _finalMaxHP = int(_realMaxHP*1.1);
+			else */_finalMaxHP = _realMaxHP;
 			_finalMaxST = _realMaxST;
 		}
 		

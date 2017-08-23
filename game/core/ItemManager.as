@@ -47,7 +47,7 @@
 				for(j = 0; j < data1.recipe.length; j++){
 					_ui.recipeField.recipes[i].vec.push(_ui.newItem(ItemDB.getItem(data1.recipe[j].x).clip, ItemDB.MATERIAL));
 					_ui.recipeField.recipes[i].vec[j].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+j);
-					_ui.recipeField.recipes[i].vec[j].clip.y = 30;
+					_ui.recipeField.recipes[i].vec[j].clip.y = InventoryUI.ITEM_HEIGHT*1.25*1/2;
 					_ui.recipeField.recipes[i].clip.addChild(_ui.recipeField.recipes[i].vec[j].clip);
 					_ui.recipeField.recipes[i].clip.visible = false;
 				}
@@ -62,7 +62,7 @@
 				for(j = 0; j < data2.recipe.length; j++){
 					_ui.recipeField.recipes[i].vec.push(_ui.newItem(ItemDB.getItem(data2.recipe[j].x).clip, ItemDB.MATERIAL));
 					_ui.recipeField.recipes[i].vec[j].clip.x = InventoryUI.ITEM_WIDTH*1.25*(1/2+j);
-					_ui.recipeField.recipes[i].vec[j].clip.y = 30;
+					_ui.recipeField.recipes[i].vec[j].clip.y = InventoryUI.ITEM_HEIGHT*1.25*1/2;
 					_ui.recipeField.recipes[i].vec[j].tf.text = String(data2.recipe[j].y);
 					_ui.recipeField.recipes[i].clip.addChild(_ui.recipeField.recipes[i].vec[j].clip);
 					_ui.recipeField.recipes[i].clip.visible = false;

@@ -1,8 +1,11 @@
 ﻿package game.ui {
+	import game.db.FontDB;
+	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
-	import game.db.FontDB;
 	import flash.text.TextFormat;
+	import flash.text.AntiAliasType;
+	import flash.text.GridFitType;
 	import flash.events.MouseEvent;
 	
 	public class Warning {
@@ -16,7 +19,7 @@
 			warning = this;
 			
 			_textField = new TextField();
-			_textFormat = new TextFormat(FontDB.getFontName(FontDB.HYShin));
+			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun));
 			_textFormat.align = "center";
 			_textFormat.leading = 7;
 			_textFormat.size = 20;

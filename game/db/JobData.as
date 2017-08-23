@@ -2,11 +2,11 @@
 	import flash.display.MovieClip;
 	import flash.utils.getDefinitionByName;
 	
-	public class CharacterData {
+	public class JobData {
 		
-		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _skill:SkillData, _clip:String;
+		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _clip:String;
 
-		public function get charName():String {
+		public function get jobName():String {
 			return _name;
 		}
 		
@@ -28,10 +28,6 @@
 		
 		public function get baseST():int {
 			return _baseST;
-		}
-		
-		public function get skill():SkillData {
-			return _skill;
 		}
 		
 		public function get clip():MovieClip {

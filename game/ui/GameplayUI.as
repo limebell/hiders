@@ -1,6 +1,6 @@
 ﻿package game.ui {
 	import game.core.Game;
-	import game.db.CharacterDB;
+	import game.db.JobDB;
 	import game.db.FontDB;
 	
 	import flash.display.MovieClip;
@@ -30,12 +30,12 @@
 
 		public function GameplayUI() {
 			_clip = new gameplayUIClip();
-			_portrait = CharacterDB.getCharacterAt(Game.currentGame.character).clip;
+			_portrait = JobDB.getJobAt(Game.currentGame.job).clip;
 			_bar_hp = new bar_hp();
 			_bar_st = new bar_st();
 			_txt_hp = new TextField();
 			_txt_st = new TextField();
-			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 12, 0xffffff);
+			_textFormat = new TextFormat(FontDB.getFontName(FontDB.NPen), 6, 0xffffff);
 			_textFormat.align = "center";
 			
 			_inventorybtn = new button();
@@ -43,19 +43,18 @@
 			_inventoryUI = new InventoryUI();
 			
 			_portrait.gotoAndStop("portrait");
-			_portrait.width = _portrait.height = 100;
-			_portrait.x = -560;
-			_portrait.y = -280;
+			_portrait.x = -280;
+			_portrait.y = -140;
 			_portrait.addEventListener(MouseEvent.MOUSE_OVER, mouseOverHandler);
 			
-			_bar_hp.x = _bar_st.x = -455;
-			_bar_hp.y = -285;
-			_bar_st.y = -245;
+			_bar_hp.x = _bar_st.x = -228;
+			_bar_hp.y = -142;
+			_bar_st.y = -122;
 			
 			_txt_hp.defaultTextFormat = _txt_st.defaultTextFormat = _textFormat;
-			_txt_hp.x = _txt_st.x = -420;
-			_txt_hp.y = -293;
-			_txt_st.y = -253;
+			_txt_hp.x = _txt_st.x = -235;
+			_txt_hp.y = -147;
+			_txt_st.y = -127;
 			_txt_hp.mouseEnabled = _txt_st.mouseEnabled = false;
 			
 			_skillField = new MovieClip();
@@ -67,23 +66,20 @@
 			_skillText.width = 150;
 			_textFormat.color = 0;
 			_skillText.defaultTextFormat = _textFormat;
-			_skillText.text = CharacterDB.getCharacterAt(Game.currentGame.character).skill.skillName+"\n";
-			_textFormat.size = 14;
-			_skillText.setTextFormat(_textFormat, 0, _skillText.length-1);
-			_skillText.appendText(CharacterDB.getCharacterAt(Game.currentGame.character).skill.description);
+			_skillText.appendText(JobDB.getJobAt(Game.currentGame.job).description);
 			_skillBox.width = _skillText.width;
 			_skillBox.height = _skillText.height;
 			_skillField.addChild(_skillBox);
 			_skillField.addChild(new skillFieldClip_up());
 			_skillField.addChild(_skillText);
 			_skillField.x = _portrait.x - _portrait.width/2;
-			_skillField.y = _portrait.y + 80;
+			_skillField.y = _portrait.y + 60;
 			_skillField.visible = false;
 			
-			_inventorybtn.width = _inventorybtn.height = _menubtn.width = _menubtn.height = 50;
-			_inventorybtn.x = 525;
-			_menubtn.x = 585;
-			_inventorybtn.y = _menubtn.y = -305;
+			_inventorybtn.width = _inventorybtn.height = _menubtn.width = _menubtn.height = 25;
+			_inventorybtn.x = 262.5;
+			_menubtn.x = 297.5;
+			_inventorybtn.y = _menubtn.y = -152.5;
 			
 			_inventorybtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			_menubtn.addEventListener(MouseEvent.CLICK, clickHandler);

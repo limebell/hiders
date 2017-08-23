@@ -7,19 +7,20 @@
 	import flash.text.TextField;
 	import game.db.MapObjectDB;
 	import flash.geom.Point;
+	import game.core.StageInfo;
 	
 	public class World extends MovieClip {
 		public static const
-		CAVE_WIDTH:int = 1000,
-		CAVE_HEIGHT:int = 400,
-		ROOM_WIDTH:int = 500,
-		ROOM_HEIGHT:int = 300,
-		CAVE_CHARACTER_Y:int = 200,
-		BUILDING_CHARACTER_Y:int = 130,
-		SIDE_BUTTON_WIDTH:int = 100,
-		SIDE_BUTTON_HEIGHT:int = 600,
-		UPDOWN_BUTTON_WIDTH:int = 800,
-		UPDOWN_BUTTON_HEIGHT:int = 100;
+		CAVE_WIDTH:int = 500,
+		CAVE_HEIGHT:int = 200,
+		ROOM_WIDTH:int = 250,
+		ROOM_HEIGHT:int = 150,
+		CAVE_CHARACTER_Y:int = 125,
+		BUILDING_CHARACTER_Y:int = 67.5,
+		SIDE_BUTTON_WIDTH:int = 50,
+		SIDE_BUTTON_HEIGHT:int = 300,
+		UPDOWN_BUTTON_WIDTH:int = 400,
+		UPDOWN_BUTTON_HEIGHT:int = 50;
 		
 		private var _character:Character;
 		private var _caves:Vector.<MovieClip>;
@@ -147,10 +148,9 @@
 			_frontField = new MovieClip();
 			_interectionField = new MovieClip();
 			_mapObjects = new Vector.<MapObjectInfo>();
-			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(0, 200), true, true));
-			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(200, 200), false, true));
-			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(0), "0", new Point(-100, -100), false, true));
-			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0:1-3", new Point(0, 150), false, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(100, CAVE_CHARACTER_Y), true, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(0), "0", new Point(-50, -50), false, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0:1-3", new Point(0, BUILDING_CHARACTER_Y), false, true));
 			for(i = 0; i < _mapObjects.length; i++){
 				//아이템 배치 오브젝트
 				if(_mapObjects[i].clip == null) continue;
@@ -174,10 +174,10 @@
 			_moveButtons.leftbtn.height = _moveButtons.rightbtn.height = SIDE_BUTTON_HEIGHT;
 			_moveButtons.upbtn.width = _moveButtons.downbtn.width = UPDOWN_BUTTON_WIDTH;
 			_moveButtons.upbtn.height = _moveButtons.downbtn.height = UPDOWN_BUTTON_HEIGHT;
-			_moveButtons.leftbtn.x = -640 + _moveButtons.leftbtn.width/2;	//640 : stageWidth/2, 360 : stageHeight/2
-			_moveButtons.rightbtn.x = 640 - _moveButtons.leftbtn.width/2;
-			_moveButtons.upbtn.y = -360 + _moveButtons.upbtn.height/2;
-			_moveButtons.downbtn.y = 360 - _moveButtons.upbtn.height/2;
+			_moveButtons.leftbtn.x = -StageInfo.stageWidth/2 + _moveButtons.leftbtn.width/2;	//640 : stageWidth/2, 360 : stageHeight/2
+			_moveButtons.rightbtn.x = StageInfo.stageWidth/2 - _moveButtons.leftbtn.width/2;
+			_moveButtons.upbtn.y = -StageInfo.stageHeight/2 + _moveButtons.upbtn.height/2;
+			_moveButtons.downbtn.y = StageInfo.stageHeight/2 - _moveButtons.upbtn.height/2;
 			_moveButtons.addChild(_moveButtons.leftbtn);
 			_moveButtons.addChild(_moveButtons.rightbtn);
 			_moveButtons.addChild(_moveButtons.upbtn);

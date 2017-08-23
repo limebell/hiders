@@ -1,8 +1,9 @@
 ﻿package game.core {
+	import game.db.JobDB;
+	import game.db.JobData;
+	
 	import flash.display.MovieClip;
 	import flash.geom.Point;
-	import game.db.CharacterDB;
-	import game.db.CharacterData;
 	
 	public class Character extends MovieClip {
 		private const
@@ -23,13 +24,13 @@
 		*/
 		
 		private var _clip:MovieClip;
-		private var _info:CharacterData;
+		private var _info:JobData;
 		private var _state:String;
 		private var _lastState:String;
 		
 		public function Character(index:int){
-			_info = CharacterDB.getCharacterAt(index);
-			_clip = _info.clip;
+			_info = JobDB.getJobAt(index);
+			_clip = new characterMC();
 			this.addChild(_clip);
 			this.state = STAY;
 		}

@@ -67,6 +67,24 @@
 			return Boolean(tar%2);
 		}
 		
+		public static function isValid(tar:String):Boolean {
+			var i:int, t1:int = -1, t2:int = -1;
+			for(i = 0; i < tar.length; i++){
+				if(tar.charAt(i) == ":"){
+					if(t1 == -1) t1 = i;
+					else return false;
+				} else if(tar.charAt(i) == "-"){
+					if(t2 == -1) t2 = i;
+					else return false;
+				}
+			}
+			if(t1 == -1 && t2 == -1) return true;
+			else if(t1 != -1 && t2 != -1){
+				if(t1 < t2) return true;
+				else return false;
+			} else return false;
+		}
+		
 		public static function isBuilding(tar:String):Boolean {
 			var flag:Boolean = false;
 			for(var i:int = 0; i < tar.length; i++){

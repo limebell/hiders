@@ -8,6 +8,7 @@
 	import game.core.Game;
 	import game.event.InventoryEvent;
 	import game.db.ItemDB;
+	import game.core.StageInfo;
 	
 	public class InventoryUI extends MovieClip {
 		public static const
@@ -31,7 +32,6 @@
 		private var _dumpButton:Object;
 		private var _craftConfirmButton:Object;
 		private var _decomposeConfirmButton:Object;
-		private var _closeButton:MovieClip;
 		private var _textFormat:TextFormat;
 		
 		private var _explanationText:TextField;
@@ -52,8 +52,8 @@
 			
 			_typeText = new TextField();
 			_typeText.defaultTextFormat = _textFormat;
-			_typeText.x = -240;
-			_typeText.y = -142.5;
+			_typeText.x = -220;
+			_typeText.y = -140;
 			_typeText.mouseEnabled = false;
 			_typeText.width = 150;
 			
@@ -68,12 +68,6 @@
 			_dumpButton = newButton("버리기", 175, 105, 50);
 			_craftConfirmButton = newButton("조합하기", 125, 105, 100);
 			_decomposeConfirmButton = newButton("분해하기", 125, 105, 100);
-			
-			_closeButton = new button();
-			_closeButton.width = _closeButton.height = 25;
-			_closeButton.x = 237.5;
-			_closeButton.y = -137.5;
-			_closeButton.addEventListener(MouseEvent.CLICK, clickHandler);
 			
 			_explanationText = new TextField();
 			_textFormat.align = "left";
@@ -123,8 +117,8 @@
 			_textFormat.align = "left";
 			_textFormat.size = 8;
 			_equipField.statusText.defaultTextFormat = _textFormat;
-			_equipField.statusText.x = -225;
-			_equipField.statusText.y = -25;
+			_equipField.statusText.x = -200;
+			_equipField.statusText.y = -20;
 			_equipField.statusText.width = 150;
 			_equipField.statusText.height = 60;
 			_equipField.clip.y = -75;
@@ -191,10 +185,8 @@
 			this.addChild(_itemField);
 			this.addChild(_craftField);
 			this.addChild(_fieldMask);
-			this.addChild(_closeButton);
 			
 			this.state = INVENTORY;
-			this.addEventListener(MouseEvent.MOUSE_WHEEL, wheelHandler);
 		}
 		
 		private function newButton(t:String, x:int, y:int, width:int):Object {
@@ -208,6 +200,7 @@
 			obj.tf.defaultTextFormat = _textFormat;
 			obj.tf.mouseEnabled = false;
 			obj.tf.width = width;
+			obj.tf.height = 18;
 			obj.tf.y = 2.5;
 			obj.tf.text = t;
 			obj.btn = new button();
@@ -233,12 +226,15 @@
 		private function clickHandler(e:MouseEvent):void {
 			switch(e.target){
 				case _inventoryButton.btn:
+					if(_state == INVENTORY) return;
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.STATE_INVENTORY));
 					break;
 				case _craftButton.btn:
+					if(_state == CRAFT) return;
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.STATE_CRAFT));
 					break;
 				case _decomposeButton.btn:
+					if(_state == DECOMPOSE) return;
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.STATE_DECOMPOSE));
 					break;
 				case _useButton.btn:
@@ -256,20 +252,17 @@
 				case _possibleOnly.checkBox:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.CHECKBOX));
 					break;
-				case _closeButton:
-					Game.currentGame.inventoryOnOff();
-					break;
 			}
 		}
 		
 		private function wheelHandler(e:MouseEvent):void {
-			if(e.stageX >= 150 && e.stageX <= 710 && e.stageY >= 288 && e.stageY <= 488){
+			if(e.stageX >= 77 && e.stageX <= 355 && e.stageY >= 145 && e.stageY <= 244){
 				if(_state == INVENTORY || _state == DECOMPOSE){
 					if(_itemField.height <= _fieldMask.height) return;
 					else {
-						_itemField.y += e.delta*20;
+						_itemField.y += e.delta*10;
 						if(_itemField.y > 0) _itemField.y = 0;
-						if(_itemField.y + _itemField.height - 31 < _fieldMask.height) _itemField.y = _fieldMask.height - _itemField.height + 31;
+						if(_itemField.y + _itemField.height - _classificationBars[0].height < _fieldMask.height) _itemField.y = _fieldMask.height - _itemField.height + _classificationBars[0].height;
 					}
 				} else {
 					
@@ -333,6 +326,14 @@
 		public function setCheckButton(bool:Boolean):void {
 			if(bool) _possibleOnly.checkBox.gotoAndStop("on");
 			else _possibleOnly.checkBox.gotoAndStop("off");
+		}
+		
+		public function on():void {
+			StageInfo.stage.addEventListener(MouseEvent.MOUSE_WHEEL, wheelHandler);
+		}
+		
+		public function off():void {
+			StageInfo.stage.removeEventListener(MouseEvent.MOUSE_WHEEL, wheelHandler);
 		}
 		
 		public function get itemField():MovieClip {
@@ -425,7 +426,6 @@
 		}
 		
 		public function set state(t:String):void {
-			if(_state == t) return;
 			switch(t){
 				case INVENTORY:
 					_itemField.y = 0;

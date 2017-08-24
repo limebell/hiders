@@ -220,11 +220,17 @@
 			removeItemAt(index);
 		}
 		
-		public function inventoryUIOnOff():void {
-			_ui.visible = !_ui.visible;
+		public function inventoryUIOn():void {
 			_prevSelectedItem = _selectedItem = -1;
 			_ui.state = InventoryUI.INVENTORY;
-			if(_ui.visible) refreshInventoryUI();
+			_ui.visible = true;
+			_ui.on();
+			refreshInventoryUI();
+		}
+		
+		public function inventoryUIOff():void {
+			_ui.visible = false;
+			_ui.off();
 		}
 		
 		public function refreshInventoryUI():void {

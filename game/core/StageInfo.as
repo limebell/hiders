@@ -1,5 +1,6 @@
 ﻿package game.core {
 	import flash.display.MovieClip;
+	import flash.display.Stage;
 	
 	public class StageInfo {
 		private static var _root:MovieClip;
@@ -14,6 +15,10 @@
 		
 		public static function get stageHeight():Number {
 			return _root.stage.stageHeight;
+		}
+		
+		public static function get stage():Stage {
+			return _root.stage;
 		}
 
 	}

@@ -163,6 +163,25 @@
 		public static function getNumDecomposeRecipe():uint {
 			return decomposeRecipes.length;
 		}
+		
+		public static function itemClassToString(itemClass:uint):String {
+			var str:String;
+			switch(itemClass){
+				case CONSUMABLE:
+					str = "consumable";
+					break;
+				case TOOL:
+					str = "tool";
+					break;
+				case EQUIPMENT:
+					str = "equipment";
+					break;
+				case MATERIAL:
+					str = "material";
+					break;
+			}
+			return str;
+		}
 	}
 	
 }

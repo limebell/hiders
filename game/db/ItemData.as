@@ -29,6 +29,10 @@
 		public function get clip():MovieClip {
 			return new (Class(getDefinitionByName(_clip)))();
 		}
+		
+		public function get clipName():String {
+			return _clip;
+		}
 
 	}
 	

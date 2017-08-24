@@ -1,17 +1,14 @@
 ﻿package game.ui {	
-	import game.db.FontDB;
+	import game.db.*;
 	import game.core.Game;
 	import game.core.StatusManager;
-	import game.db.ItemDB;
 	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
-
-	//import flash.text.AntiAliasType;
-	//import flash.text.GridFitType;
+	import game.map.Map;
 	
 	public class Console extends MovieClip {
 		private var _clip:MovieClip;
@@ -68,7 +65,7 @@
 		}
 		
 		private function analyze(t:String):void {
-			var i:int, script:String, msg:String, loc:int, flag:Boolean, temp1:String, temp2:String;
+			var i:int, j:int, script:String, msg:String, loc:int, flag:Boolean, temp1:String, temp2:String, itemData:ItemData, craftData:CraftData, decomposeData:DecomposeData;
 			for(i = 0; i < t.length; i++){
 				if(t.charAt(i) == "@"){
 					script = t.substr(0, i);
@@ -81,7 +78,7 @@
 				case "help":
 					msg = "currentLocation@\ncaveLength@\nstatus@\n"+
 							"add@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)\n"+
-							"addItem@itemCode(int),amount(int)";
+							"addItem@itemCode(int),amount(int)\nitemList@\ncraftRecipeList@\ndecomposeRecipeList@\nitemInfo@itemCode(int)";
 					break;
 				
 				case "currentLocation":
@@ -204,21 +201,17 @@
 						else if(temp2 != String(int(temp2))) msg = "명령어의 형식이 잘못되었습니다. spd(int)에는 숫자가 들어가야 합니다.";
 						else if((int(temp2)) <= 0) msg = "명령어의 형식이 잘못되었습니다. spd(int)에는 0보다 큰 숫자가 들어가야 합니다.";
 						else {
-							//temp1이 빌딩인가 검사해야함...
-							//msg = "명령어의 형식이 잘못되었습니다. gloc(stinrg)의 형식은 \"(buildingNo)\"혹은, \"(buildingNo):(floor)-(roomIndex)\"입니다.";
-							flag = false;
-							for(i = 0; i < temp1.length; i++){
-								if(temp1.charAt(i) == ":"){
-									flag = true;
-									break;
-								}
-							}
-							if(!flag){
-								//일단 cave에 있는 상태라고 가정하고 진행
+							if(Map.isValid(temp1)){
+								msg = "명령어의 형식이 잘못되었습니다. gloc(stinrg)의 형식은 \"(buildingNo)\"혹은, \"(buildingNo):(floor)-(roomIndex)\"입니다.";
+							} else if(Map.isBuilding(temp1)){
+								//building에 있는 상태
+								msg = "아직 빌딩은 구현되지 않았습니다.";
+							} else {
+								//cave에 있는 상태
 								if(Game.currentGame.mapManager.goto(temp1, int(temp2))) msg = temp1+"까지 "+temp2+"의 속도로 이동합니다.";
 								else msg = "이동 범위가 잘못되었습니다.";
 								
-							} else msg = "아직 빌딩은 구현되지 않았습니다.";
+							}
 						}
 					}
 					break;
@@ -247,6 +240,39 @@
 						}
 					}
 					break;
+					
+				case "itemList":
+					msg = "numItems : "+ItemDB.getNumItems()+"\n"+"Items (itemCode(int), itemName(String), itemClass(uint))";
+					for(i = 0; i < ItemDB.getNumItems(); i++){
+						itemData = ItemDB.getItem(i);
+						msg += "\n"+i+", "+itemData.itemName+", "+ItemDB.itemClassToString(itemData.itemClass);
+					}
+					break;
+					
+				case "craftRecipeList":
+					msg = "Craft Recipes (craftRecipeIndex(int), itemCode(int) : [itemCode(int), number(int)] []..)"
+					for(i = 0; i < ItemDB.getNumCraftRecipe(); i++){
+						craftData = ItemDB.getCraftRecipeAt(i);
+						msg += "\n"+i+", "+craftData.itemCode+" :";
+						for(j = 0; j < craftData.recipe.length; j++) msg += " ["+craftData.recipe[j].x+", "+craftData.recipe[j].y+"]";
+					}
+					break;
+					
+				case "decomposeRecipeList":
+					msg = "Decompose Recipes (decomposeRecipeIndex(int), itemCode(int) : [itemCode(int), number(int)] []..)"
+					for(i = 0; i < ItemDB.getNumDecomposeRecipe(); i++){
+						decomposeData = ItemDB.getDecomposeRecipeAt(i);
+						msg += "\n"+i+", "+decomposeData.itemCode+" :";
+						for(j = 0; j < decomposeData.recipe.length; j++) msg += " ["+decomposeData.recipe[j].x+", "+decomposeData.recipe[j].y+"]";
+					}
+					break;
+				
+				case "itemInfo":
+					temp1 = t.substr(i+1, t.length-1);
+					if(temp1 == "" || temp1 != String(int(temp1))) msg = "명령어의 형식이 잘못되었습니다. itemInfo는 인수 itemCode(int)가 필요합니다.";
+					else if(int(temp1) >= ItemDB.getNumItems()) msg = "itemCode(int)의 범위가 잘못되었습니다.";
+					else msg = getItemInfo(int(temp1));
+					break;
 				
 				default:
 					msg = "존재하지 않는 명령어 입니다. help@를 입력하여 존재하는 명령어를 알아보세요.";
@@ -256,6 +282,28 @@
 			_outputText.appendText(msg+"\n");
 			_outputText.setTextFormat(_msgFormat, _outputText.length - msg.length - 1, _outputText.length - 1);
 			_outputText.scrollV = _outputText.maxScrollV;
+		}
+		
+		private function getItemInfo(itemCode:int):String {
+			var msg:String, itemData:ItemData;
+			itemData = ItemDB.getItem(itemCode);
+			msg = "itemCode : "+itemCode+"\nitemName : "+itemData.itemName+"\ndescription : "+itemData.description+"\nitemClass : "+ItemDB.itemClassToString(itemData.itemClass)+", weight : "+itemData.weight;
+			switch(itemData.itemClass){
+				case ItemDB.CONSUMABLE:
+					msg += "\nhp : "+Consumable(itemData).hp+", st : "+Consumable(itemData).st;
+					break;
+				case ItemDB.TOOL:
+					msg += "\ndurability : "+Tool(itemData).durability;
+					break;
+				case ItemDB.EQUIPMENT:
+					msg += "\natk : "+Equipment(itemData).atk+", def : "+Equipment(itemData).def+", hp : "+Equipment(itemData).hp+", st : "+Equipment(itemData).st;
+					msg += ", part : "+Equipment(itemData).part+", weaponType : "+Equipment(itemData).weaponType;
+					break;
+				default:
+					break;
+			}
+			msg += "\nclip : "+itemData.clipName;
+			return msg;
 		}
 		
 		public function switchState():void {

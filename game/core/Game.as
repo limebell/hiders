@@ -124,9 +124,16 @@
 			return _interectionManager;
 		}
 		
-		public function inventoryOnOff():void {
-			_itemManager.inventoryUIOnOff();
-			switchAction();
+		public function inventoryOn():void {
+			_itemManager.inventoryUIOn();
+			_ui.uiClip.visible = true;
+			_noAction = true;
+		}
+		
+		public function uiClipOff():void {
+			_itemManager.inventoryUIOff();
+			_ui.uiClip.visible = false;
+			_noAction = false;
 		}
 		
 		public function get root():MovieClip {

@@ -361,17 +361,11 @@
 		}
 		
 		private function isValid(gloc:String):Boolean {
-			if(!Map.isBuilding(gloc)){
+			if(!Map.isValid(gloc)) return false;
+			else if(!Map.isBuilding(gloc)){
 				if(gloc != String(int(gloc))) return false;
 				if(_world.map.caveLength <= int(gloc)) return false;
-			}
-			else if(Map.isBuilding(gloc)) {
-				var flag1:Boolean = false, flag2:Boolean = false;
-				for(var i:int = 0; i < gloc.length; i++) {
-					if(gloc.charAt(i) == ":") flag1 = true;
-					if(gloc.charAt(i) == "-") flag2 = true;
-				}
-				if(!flag1 || !flag2) return false;
+			} else if(Map.isBuilding(gloc)) {
 				if(gloc != Map.buildingNum(gloc)+":"+Map.buildingFloor(gloc)+"-"+Map.buildingIndex(gloc)) return false;
 				if(_world.map.numBuildings <= Map.buildingNum(gloc)) return false;
 				else if(_world.map.buildingAt(Map.buildingNum(gloc)).buildingHeight <= Map.buildingFloor(gloc)) return false;

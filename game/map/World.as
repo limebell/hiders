@@ -1,13 +1,14 @@
 ﻿package game.map {
-	import flash.display.MovieClip;
-	import flash.events.MouseEvent;
 	import game.core.Character;
 	import game.core.Game;
 	import game.event.MapEvent;
-	import flash.text.TextField;
 	import game.db.MapObjectDB;
+	import system.StageInfo;
+	
+	import flash.display.MovieClip;
+	import flash.events.MouseEvent;
 	import flash.geom.Point;
-	import game.core.StageInfo;
+	import flash.text.TextField;
 	
 	public class World extends MovieClip {
 		public static const

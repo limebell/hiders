@@ -8,7 +8,7 @@
 	import game.core.Game;
 	import game.event.InventoryEvent;
 	import game.db.ItemDB;
-	import game.core.StageInfo;
+	import system.StageInfo;
 	
 	public class InventoryUI extends MovieClip {
 		public static const

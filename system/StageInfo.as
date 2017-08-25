@@ -1,4 +1,4 @@
-﻿package game.core {
+﻿package system {
 	import flash.display.MovieClip;
 	import flash.display.Stage;
 	
@@ -19,6 +19,10 @@
 		
 		public static function get stage():Stage {
 			return _root.stage;
+		}
+		
+		public static function get root():MovieClip {
+			return _root;
 		}
 
 	}

@@ -27,6 +27,7 @@
 		private var _uiClip:MovieClip;
 		private var _closebtn:MovieClip;
 		private var _inventoryUI:InventoryUI;
+		private var _gameMenuUI:GameMenuUI;
 
 		public function GameplayUI() {
 			_clip = new gameplayUIClip();
@@ -41,6 +42,7 @@
 			_inventorybtn = new button();
 			_menubtn = new button();
 			_inventoryUI = new InventoryUI();
+			_gameMenuUI = new GameMenuUI();
 			_uiClip = new uiClipUI();
 			_closebtn = new button();
 			
@@ -81,13 +83,13 @@
 			_portraitTextField.clip.addChild(_portraitTextField.middle);
 			_portraitTextField.clip.addChild(_portraitTextField.down);
 			_portraitTextField.clip.addChild(_portraitTextField.tf);
-			_portraitTextField.clip.x = _portrait.x - _portrait.width;
-			_portraitTextField.clip.y = _portrait.y + _portrait.height*1.2;
+			_portraitTextField.clip.x = _portrait.x - _portrait.width/2;
+			_portraitTextField.clip.y = _portrait.y + _portrait.height;
 			_portraitTextField.clip.visible = false;
 			
 			_inventorybtn.width = _inventorybtn.height = _menubtn.width = _menubtn.height = 25;
 			_inventorybtn.x = 262.5;
-			_menubtn.x = 297.5;
+			_menubtn.x = 292.5;
 			_inventorybtn.y = _menubtn.y = -152.5;
 			_closebtn.width = 16;
 			_closebtn.height = 32;
@@ -98,9 +100,11 @@
 			_closebtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			
 			_uiClip.addChild(_inventoryUI);
+			_uiClip.addChild(_gameMenuUI);
 			_uiClip.addChild(_closebtn);
 			_uiClip.visible = false;
 			_inventoryUI.visible = false;
+			_gameMenuUI.visible = false;
 			
 			this.addChild(_clip);
 			_clip.addChild(_portrait);
@@ -143,12 +147,20 @@
 					break;
 				case _menubtn:
 					if(Game.currentGame.noAction) return;
-					trace("menu button");
+					Game.currentGame.gameMenuOn();
 					break;
 				case _closebtn:
 					Game.currentGame.uiClipOff();
 					break;
 			}
+		}
+		
+		public function gameMenuUIOn():void {
+			_gameMenuUI.visible = true;
+		}
+		
+		public function gameMenuUIOff():void {
+			_gameMenuUI.visible = false;
 		}
 		
 		public function get hpBar():MovieClip {

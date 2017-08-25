@@ -2,13 +2,13 @@
 	import game.db.JobDB;
 	import game.db.JobData;
 	import game.db.FontDB;
-	import game.core.StageInfo;
+	import system.StageInfo;
+	import system.SoundEffect;
 	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
 	import flash.events.MouseEvent;
 	import flash.text.TextFormat;
-	import flash.media.Sound;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
@@ -28,8 +28,6 @@
 		private var _rightbtn:MovieClip;
 		
 		private var _timer:Timer;
-		private var _switchSound:Sound;
-		private var _paperflipSound:Sound;
 
 		public function JobSelectUI() {
 			_clip = new jobSelectUIClip();
@@ -80,8 +78,6 @@
 			_rightbtn.addEventListener(MouseEvent.CLICK, clickHandler);
 			
 			_timer = new Timer(400);
-			_switchSound = new sound_switch();
-			_paperflipSound = new sound_paperflip();
 			
 			changeJobTo(0);
 			_clip.gotoAndStop("on");
@@ -91,11 +87,11 @@
 			switch(e.target){
 				case _leftbtn:
 					if(_index != 0) moveJobTo(_index-1);
-					else _paperflipSound.play();
+					else SoundEffect.play(1);
 					break;
 				case _rightbtn:
 					if(_index != JobDB.getNumJobs()-1) moveJobTo(_index+1);
-					else _paperflipSound.play();
+					else SoundEffect.play(1);
 					break;
 			}
 		}
@@ -103,7 +99,7 @@
 		private function moveJobTo(index):void {
 			if(_timer.running) return;
 			
-			_switchSound.play();
+			SoundEffect.play(0);
 			_clip.gotoAndStop("off");
 			Shade.fadeOut(12);
 			_timer.start();
@@ -112,7 +108,7 @@
 			function timerHandler(e:TimerEvent):void {
 				_timer.stop();
 				_timer.removeEventListener(TimerEvent.TIMER, timerHandler);
-				_switchSound.play();
+				SoundEffect.play(0);
 				_clip.gotoAndStop("on");
 				Shade.fadeIn(12);
 				changeJobTo(index);

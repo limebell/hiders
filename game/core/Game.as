@@ -12,6 +12,7 @@
 	import flash.errors.IllegalOperationError;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
+	import system.StageInfo;
 	
 	public class Game extends EventDispatcher {
 		private static const NO_DATA:int = -1;
@@ -36,12 +37,12 @@
 		
 		private var _jobIndex:int;
 		
-		public function Game(root:MovieClip, loadData:Object=null) {
+		public function Game(loadData:Object=null) {
 			currentGame = this;
 			_data = loadData;
 			
-			_root = root;
-			root.gotoAndStop("play");
+			_root = StageInfo.root;
+			_root.gotoAndStop("play");
 			_root.shade.gotoAndPlay(2);
 			_display = _root.disp;
 			
@@ -126,12 +127,21 @@
 		
 		public function inventoryOn():void {
 			_itemManager.inventoryUIOn();
+			_ui.gameMenuUIOff();
+			_ui.uiClip.visible = true;
+			_noAction = true;
+		}
+		
+		public function gameMenuOn():void {
+			_itemManager.inventoryUIOff();
+			_ui.gameMenuUIOn();
 			_ui.uiClip.visible = true;
 			_noAction = true;
 		}
 		
 		public function uiClipOff():void {
 			_itemManager.inventoryUIOff();
+			_ui.gameMenuUIOff();
 			_ui.uiClip.visible = false;
 			_noAction = false;
 		}

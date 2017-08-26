@@ -68,7 +68,8 @@
 			if(!Map.isBuilding(_globalLocation)){
 				_world.character.climb();
 				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
-				_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y+World.CAVE_HEIGHT, 60);
+				_world.initInterection();
+				moveFields(_world.backField.x, _world.backField.y + World.CAVE_HEIGHT, 60);
 				Shade.fadeOut(60);
 				_tween.addEventListener(TweenEvent.MOTION_FINISH, enterBuilding);
 			} else {
@@ -87,7 +88,8 @@
 				if(Map.buildingFloor(_globalLocation) == 0 && Map.buildingIndex(_globalLocation) == _world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedRoom){
 					_world.character.climb();
 					Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
-					_tween = new Tween(_world.backField, "y", None.easeNone, _world.backField.y, _world.backField.y-World.CAVE_HEIGHT, 60);
+					_world.initInterection();
+					moveFields(_world.backField.x, _world.backField.y - World.CAVE_HEIGHT, 60);
 					Shade.fadeOut(60);
 					_tween.addEventListener(TweenEvent.MOTION_FINISH, leaveBuilding);
 				} else {
@@ -175,11 +177,11 @@
 		
 		private function teleportTo(gloc){
 			if(!Map.isBuilding(gloc)){
-				_world.backField.x = -int(gloc)*World.CAVE_WIDTH;
-				_world.backField.y = 0;
+				_world.backField.x = _world.frontField.x = -int(gloc)*World.CAVE_WIDTH;
+				_world.backField.y = _world.frontField.y = 0;
 			} else {
-				_world.backField.x = -Map.buildingIndex(gloc)*World.ROOM_WIDTH;
-				_world.backField.y = Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
+				_world.backField.x = _world.frontField.x = -Map.buildingIndex(gloc)*World.ROOM_WIDTH;
+				_world.backField.y = _world.frontField.y = Map.buildingFloor(gloc)*World.ROOM_HEIGHT;
 			}
 			
 			setButtonOf(gloc);

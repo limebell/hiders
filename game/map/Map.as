@@ -20,13 +20,13 @@
 		private function randomizeMap():void {
 			var i:int;
 			_caveLength = MIN_CAVE_LENGTH + int((MAX_CAVE_LENGTH-MIN_CAVE_LENGTH)*Math.random());
-			_cave[0] = newCave(false, true, false, false);
+			_cave[0] = newCave(false, true, true, false);
 			for(i = 1; i < _caveLength-1; i++){
 				_cave[i] = newCave(true, true, false, false);
 			}
 			
-			_cave[1] = newCave(true, true, true, false);
-			_buildings.push(new Building(1, 4, 3));
+			//_cave[1] = newCave(true, true, true, false);
+			_buildings.push(new Building(0, 4, 3));
 			
 			_cave[_caveLength-1] = newCave(true, false, false, false);
 		}

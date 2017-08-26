@@ -16,8 +16,8 @@
 		CAVE_HEIGHT:int = 200,
 		ROOM_WIDTH:int = 250,
 		ROOM_HEIGHT:int = 150,
-		CAVE_CHARACTER_Y:int = 125,
-		BUILDING_CHARACTER_Y:int = 67.5,
+		CAVE_CHARACTER_Y:int = 100,
+		BUILDING_CHARACTER_Y:int = 65,
 		SIDE_BUTTON_WIDTH:int = 50,
 		SIDE_BUTTON_HEIGHT:int = 300,
 		UPDOWN_BUTTON_WIDTH:int = 400,
@@ -151,7 +151,7 @@
 			_mapObjects = new Vector.<MapObjectInfo>();
 			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0", new Point(100, CAVE_CHARACTER_Y), true, true));
 			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(0), "0", new Point(-50, -50), false, true));
-			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0:1-3", new Point(0, BUILDING_CHARACTER_Y), false, true));
+			_mapObjects.push(new MapObjectInfo(MapObjectDB.getObject(1), "0:0-3", new Point(0, BUILDING_CHARACTER_Y), true, true));
 			for(i = 0; i < _mapObjects.length; i++){
 				//아이템 배치 오브젝트
 				if(_mapObjects[i].clip == null) continue;

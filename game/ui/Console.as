@@ -253,7 +253,7 @@
 					msg = "Craft Recipes (craftRecipeIndex(int), itemCode(int) : [itemCode(int), number(int)] []..)"
 					for(i = 0; i < ItemDB.getNumCraftRecipe(); i++){
 						craftData = ItemDB.getCraftRecipeAt(i);
-						msg += "\n"+i+", "+craftData.itemCode+" :";
+						msg += "\n"+i+", "+craftData.itemCode+", (req "+craftData.req+")"+" :";
 						for(j = 0; j < craftData.recipe.length; j++) msg += " ["+craftData.recipe[j].x+", "+craftData.recipe[j].y+"]";
 					}
 					break;
@@ -262,7 +262,7 @@
 					msg = "Decompose Recipes (decomposeRecipeIndex(int), itemCode(int) : [itemCode(int), number(int)] []..)"
 					for(i = 0; i < ItemDB.getNumDecomposeRecipe(); i++){
 						decomposeData = ItemDB.getDecomposeRecipeAt(i);
-						msg += "\n"+i+", "+decomposeData.itemCode+" :";
+						msg += "\n"+i+", "+decomposeData.itemCode+", (req "+decomposeData.req+")"+" :";
 						for(j = 0; j < decomposeData.recipe.length; j++) msg += " ["+decomposeData.recipe[j].x+", "+decomposeData.recipe[j].y+"]";
 					}
 					break;
@@ -297,7 +297,7 @@
 					break;
 				case ItemDB.EQUIPMENT:
 					msg += "\natk : "+Equipment(itemData).atk+", def : "+Equipment(itemData).def+", hp : "+Equipment(itemData).hp+", st : "+Equipment(itemData).st;
-					msg += ", part : "+Equipment(itemData).part+", weaponType : "+Equipment(itemData).weaponType;
+					msg += ", part : "+ItemDB.partToString(Equipment(itemData).part)+", weaponType : "+Equipment(itemData).weaponType;
 					break;
 				default:
 					break;

@@ -9,12 +9,16 @@
 	import game.event.InventoryEvent;
 	import game.db.ItemDB;
 	import system.StageInfo;
+	import flash.geom.Point;
 	
 	public class InventoryUI extends MovieClip {
 		public static const
 		INVENTORY:String = "inventory",
 		CRAFT:String = "craft",
 		DECOMPOSE:String = "decompose",
+		CONSUME:String = "consume",
+		EQUIP:String = "equip",
+		UNEQUIP:String = "unequip",
 		ITEM_WIDTH:int = 25,
 		ITEM_HEIGHT:int = 25,
 		MAX_XNUM:int = 11;
@@ -29,9 +33,12 @@
 		private var _craftButton:Object;
 		private var _decomposeButton:Object;
 		private var _useButton:Object;
-		private var _dumpButton:Object;
+		private var _dumpSmallButton:Object;
+		private var _dumpBigButton:Object;
 		private var _craftConfirmButton:Object;
 		private var _decomposeConfirmButton:Object;
+		private var _equipButton:Object;
+		private var _unequipButton:Object;
 		private var _textFormat:TextFormat;
 		
 		private var _explanationText:TextField;
@@ -44,6 +51,7 @@
 		private var _recipeField:Object;
 		private var _items:Vector.<Object>;
 		private var _craftItems:Vector.<Object>;
+		private var _equipingItems:Array;
 
 		public function InventoryUI() {
 			_clip = new inventoryUIClip();
@@ -65,9 +73,12 @@
 			_craftButton = newButton("조합", -175, -20, 50);
 			_decomposeButton = newButton("분해", -125, -20, 50);
 			_useButton = newButton("사용하기", 125, 105, 50);
-			_dumpButton = newButton("버리기", 175, 105, 50);
+			_dumpSmallButton = newButton("버리기", 175, 105, 50);
+			_dumpBigButton = newButton("버리기", 125, 105, 100);
 			_craftConfirmButton = newButton("조합하기", 125, 105, 100);
 			_decomposeConfirmButton = newButton("분해하기", 125, 105, 100);
+			_equipButton = newButton("장착하기", 125, 105, 50);
+			_unequipButton = newButton("해제하기", 125, 105, 100);
 			
 			_explanationText = new TextField();
 			_textFormat.align = "left";
@@ -93,12 +104,14 @@
 			_classificationBars.push(new classificationClip());
 			_classificationBars.push(new classificationClip());
 			_classificationBars.push(new classificationClip());
+			_classificationBars.push(new classificationClip());
 			_classificationBars[0].tf.text = "Consumable";
 			_classificationBars[1].tf.text = "Tool";
 			_classificationBars[2].tf.text = "Equipment";
 			_classificationBars[3].tf.text = "Material";
-			_classificationBars[4].tf.text = "null";
-			_classificationBars[0].visible = _classificationBars[1].visible = _classificationBars[2].visible = _classificationBars[3].visible = _classificationBars[4].visible = false;
+			_classificationBars[4].tf.text = "Placeable";
+			_classificationBars[5].tf.text = "null";
+			_classificationBars[0].visible = _classificationBars[1].visible = _classificationBars[2].visible = _classificationBars[3].visible = _classificationBars[4].visible = _classificationBars[5].visible = false;
 			
 			_craftField = new MovieClip();
 			_craftField.x = -225;
@@ -107,11 +120,10 @@
 			_equipField = new Object();
 			_equipField.clip = new MovieClip();
 			_equipField.human = new human();
-			_equipField.head = newEquipField(-15, -60);
-			_equipField.arm = newEquipField(-50, -10);
-			_equipField.body = newEquipField(-15, -20);
-			_equipField.weapon = newEquipField(20, -10);
-			_equipField.leg = newEquipField(-15, 35);
+			_equipField.head = newEquipField(0, -45);
+			_equipField.body = newEquipField(0, -5);
+			_equipField.weapon = newEquipField(35, 5);
+			_equipField.leg = newEquipField(0, 50);
 			_equipField.statusText = new TextField();
 			_equipField.statusText.mouseEnabled = false;
 			_textFormat.align = "left";
@@ -125,11 +137,12 @@
 			_equipField.clip.addChild(_equipField.statusText);
 			_equipField.clip.addChild(_equipField.human);
 			_equipField.clip.addChild(_equipField.head);
-			_equipField.clip.addChild(_equipField.arm);
 			_equipField.clip.addChild(_equipField.body);
 			_equipField.clip.addChild(_equipField.weapon);
 			_equipField.clip.addChild(_equipField.leg);
 			_equipField.clip.visible = false;
+			
+			_equipingItems = new Array();
 			
 			_possibleOnly = new Object();
 			_possibleOnly.clip = new MovieClip();
@@ -174,9 +187,12 @@
 			this.addChild(_craftButton.clip);
 			this.addChild(_decomposeButton.clip);
 			this.addChild(_useButton.clip);
-			this.addChild(_dumpButton.clip);
+			this.addChild(_dumpSmallButton.clip);
+			this.addChild(_dumpBigButton.clip);
 			this.addChild(_craftConfirmButton.clip);
 			this.addChild(_decomposeConfirmButton.clip);
+			this.addChild(_equipButton.clip);
+			this.addChild(_unequipButton.clip);
 			
 			this.addChild(_explanationText);
 			this.addChild(_equipField.clip);
@@ -217,7 +233,7 @@
 		private function newEquipField(x:int, y:int):MovieClip {
 			var mc:MovieClip = new MovieClip();
 			mc.graphics.lineStyle(1, 0xffffff);
-			mc.graphics.drawRect(0, 0, 30, 30);
+			mc.graphics.drawRect(-15, -15, 30, 30);
 			mc.x = x;
 			mc.y = y;
 			return mc;
@@ -240,7 +256,10 @@
 				case _useButton.btn:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_USE));
 					break;
-				case _dumpButton.btn:
+				case _dumpSmallButton.btn:
+					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_DUMP));
+					break;
+				case _dumpBigButton.btn:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_DUMP));
 					break;
 				case _craftConfirmButton.btn:
@@ -248,6 +267,12 @@
 					break;
 				case _decomposeConfirmButton.btn:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_DECOMPOSE));
+					break;
+				case _equipButton.btn:
+					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_EQUIP));
+					break;
+				case _unequipButton.btn:
+					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.ITEM_UNEQUIP));
 					break;
 				case _possibleOnly.checkBox:
 					Game.currentGame.itemManager.dispatchEvent(new InventoryEvent(InventoryEvent.CHECKBOX));
@@ -299,33 +324,67 @@
 			return obj;
 		}
 		
-		public function selectItem(prev:int, index:int):void {
-			if(prev != -1){
-				if(_state == CRAFT){
-					_craftItems[prev].select.visible = false;
-				}
-				else _items[prev].select.visible = false;
-			}
-			if(index != -1){
-				if(_state == CRAFT){
-					_craftItems[index].select.visible = true;
-				}
-				else _items[index].select.visible = true;
+		public function selectItem(prev:Point, index:Point):void {
+			removeSelect(prev);
+			if(index != null){
+				if(_state == INVENTORY){
+					if(index.x == 0){
+						_items[index.y].select.visible = true;
+					} else _equipingItems[index.y].select.visible = true;
+				} else if(_state == CRAFT){
+					_craftItems[index.y].select.visible = true;
+				} else _items[index.y].select.visible = true;
 			}
 		}
 		
-		public function removeSelect(tar:int):void {
-			if(tar != -1){
-				if(_state == CRAFT){
-					_craftItems[tar].select.visible = false;
+		public function removeSelect(tar:Point):void {
+			if(tar != null){
+				if(_state == INVENTORY){
+					if(tar.x == 0){
+						_items[tar.y].select.visible = false;
+					} else _equipingItems[tar.y].select.visible = false;
+				} else if(_state == CRAFT){
+					_craftItems[tar.y].select.visible = false;
 				}
-				else _items[tar].select.visible = false;
+				else _items[tar.y].select.visible = false;
 			}
 		}
 		
 		public function setCheckButton(bool:Boolean):void {
 			if(bool) _possibleOnly.checkBox.gotoAndStop("on");
 			else _possibleOnly.checkBox.gotoAndStop("off");
+		}
+		
+		public function setButton(tar:String = null):void {
+			_useButton.clip.visible = false;
+			_dumpSmallButton.clip.visible = false;
+			_dumpBigButton.clip.visible = false;
+			_craftConfirmButton.clip.visible = false;
+			_decomposeConfirmButton.clip.visible = false;
+			_equipButton.clip.visible = false;
+			_unequipButton.clip.visible = false;
+			switch(tar){
+				case CONSUME:
+					_useButton.clip.visible = true;
+					_dumpSmallButton.clip.visible = true;
+					break;
+				case INVENTORY:
+					_dumpBigButton.clip.visible = true;
+					break;
+				case CRAFT:
+					_craftConfirmButton.clip.visible = true;
+					break;
+				case DECOMPOSE:
+					_decomposeConfirmButton.clip.visible = true;
+					break;
+				case EQUIP:
+					_equipButton.clip.visible = true;
+					_dumpSmallButton.clip.visible = true;
+					break;
+				case UNEQUIP:
+					_unequipButton.clip.visible = true;
+					break;
+			}
 		}
 		
 		public function on():void {
@@ -354,6 +413,10 @@
 		
 		public function get craftItems():Vector.<Object> {
 			return _craftItems;
+		}
+		
+		public function get equipingItems():Array {
+			return _equipingItems;
 		}
 		
 		public function get recipeField():Object {
@@ -430,10 +493,6 @@
 				case INVENTORY:
 					_itemField.y = 0;
 					_typeText.text = "Inventory";
-					_useButton.clip.visible = true;
-					_dumpButton.clip.visible = true;
-					_craftConfirmButton.clip.visible = false;
-					_decomposeConfirmButton.clip.visible = false;
 					_itemField.visible = true;
 					_craftField.visible = false;
 					_equipField.clip.visible = true;
@@ -445,14 +504,11 @@
 					_itemField.addChild(_classificationBars[2]);
 					_itemField.addChild(_classificationBars[3]);
 					_itemField.addChild(_classificationBars[4]);
+					_itemField.addChild(_classificationBars[5]);
 					break;
 				case CRAFT:
 					_craftField.y = 0;
 					_typeText.text = "Crafting";
-					_useButton.clip.visible = false;
-					_dumpButton.clip.visible = false;
-					_craftConfirmButton.clip.visible = true;
-					_decomposeConfirmButton.clip.visible = false;
 					_itemField.visible = false;
 					_craftField.visible = true;
 					_equipField.clip.visible = false;
@@ -465,14 +521,11 @@
 					_craftField.addChild(_classificationBars[2]);
 					_craftField.addChild(_classificationBars[3]);
 					_craftField.addChild(_classificationBars[4]);
+					_craftField.addChild(_classificationBars[5]);
 					break;
 				case DECOMPOSE:
 					_itemField.y = 0;
 					_typeText.text = "Decomposition";
-					_useButton.clip.visible = false;
-					_dumpButton.clip.visible = false;
-					_craftConfirmButton.clip.visible = false;
-					_decomposeConfirmButton.clip.visible = true;
 					_itemField.visible = true;
 					_craftField.visible = false;
 					_equipField.clip.visible = false;
@@ -485,9 +538,11 @@
 					_itemField.addChild(_classificationBars[2]);
 					_itemField.addChild(_classificationBars[3]);
 					_itemField.addChild(_classificationBars[4]);
+					_itemField.addChild(_classificationBars[5]);
 					break;
 			}
 			_state = t;
+			setButton();
 		}
 
 	}

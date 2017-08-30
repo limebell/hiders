@@ -13,7 +13,7 @@
 	public class World extends MovieClip {
 		public static const
 		CAVE_WIDTH:int = 500,
-		CAVE_HEIGHT:int = 200,
+		CAVE_HEIGHT:int = 250,
 		ROOM_WIDTH:int = 250,
 		ROOM_HEIGHT:int = 150,
 		CAVE_CHARACTER_Y:int = 100,
@@ -77,12 +77,12 @@
 				} else {
 					_caves[i].addChild(new cave_downB_0);
 				}
-				
+				/*
 				_caves[i].tf = new TextField();
 				_caves[i].tf.text = i+"번째 동굴";
 				_caves[i].tf.mouseEnabled = false;
 				_caves[i].addChild(_caves[i].tf);
-				
+				*/
 				_caves[i].x = i*CAVE_WIDTH;
 			}
 			
@@ -121,12 +121,12 @@
 						} else {
 							_buildings[i][j][k].addChild(new room_downB_0);
 						}
-				
+						/*
 						_buildings[i][j][k].tf = new TextField();
 						_buildings[i][j][k].tf.text = i+"번째 빌딩 "+j+"층 "+k+"칸";
 						_buildings[i][j][k].tf.mouseEnabled = false;
 						_buildings[i][j][k].addChild(_buildings[i][j][k].tf);
-						
+						*/
 						_buildings[i][j][k].x = k*ROOM_WIDTH;
 						_buildings[i][j][k].y = -j*ROOM_HEIGHT;
 					}

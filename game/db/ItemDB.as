@@ -2,6 +2,7 @@
 	import flash.display.MovieClip;
 	import flash.geom.Point;
 	import game.db.Equipment;
+	import flash.errors.IllegalOperationError;
 	
 	public class ItemDB {
 		public static const
@@ -9,12 +10,12 @@
 		TOOL:uint = 1,
 		EQUIPMENT:uint = 2,
 		MATERIAL:uint = 3,
+		PLACEABLE:uint = 4,
 		
-		HEAD:String = "head",
-		ARM:String = "arm",
-		BODY:String = "body",
-		SHOES:String = "shoes",
-		WEAPON:String = "weapon",
+		WEAPON:uint = 0,
+		HEAD:uint = 1,
+		BODY:uint = 2,
+		LEG:uint = 3,
 		
 		DAGGER:String = "dagger",
 		SWORD:String = "sword",
@@ -39,7 +40,7 @@
 			addToolItem("곡괭이", "머리부분이 심하게 녹슨 낡은 곡괭이 입니다. 돌을 부술 수 있습니다", 15, 10, "item_pickax");
 			//Equipments : itemName, description, weight, atk, def, hp, st, part, weaponType, clip
 			addEquipItem("얍새의 롯리모자", "알바에 통달한 사람만이 착용할 수 있다고 알려진 전설적인 모자입니다. 매력적인 빨간색을 띄고 있습니다.",
-							5, 0, 4, 0, 0, HEAD, null, "item_lotteriahat");
+							5, 0, 4, 20, 0, HEAD, null, "item_lotteriahat");
 			addEquipItem("나무 막대", "짧은 나무 막대입니다. 무기로 사용할 수 있습니다.",
 							3, 3, 0, 0, 0, WEAPON, DAGGER, "item_woodstick");
 			addEquipItem("긴 나무 막대", "긴 나무 막대입니다. 무기로 사용할 수 있습니다.",
@@ -47,9 +48,11 @@
 			//Materials : itemName, description, weight, clip
 			addMaterialItem("넙죽이", "정체를 알 수 없는 넙죽한 물질입니다. 보기보다 꽤 묵직합니다.", 5, "item_nupjook");
 			addMaterialItem("종이테이프", "거의 다 사용해 얼마 남지 않은 종이테이프입니다.", 1, "item_tape");
+			//Placeable : itemName, description, weight, clip
+			addPlaceableItem("조합대", "조합대 입니다. 간단한 물건을 조합할 수 있습니다.", 30, "item_nupjook");
 			
 			//Craft Recipes
-			addCraftRecipe(0x01, new <Point>[new Point(0x03, 1), new Point(0x05, 2)]);
+			addCraftRecipe(0x01, new <Point>[new Point(0x03, 1), new Point(0x05, 2)], 7);
 			addCraftRecipe(0x04, new <Point>[new Point(0x03, 2), new Point(0x06, 1)]);
 			
 			//Decomposition Recipes
@@ -88,7 +91,7 @@
 			numItems++;
 		}
 		
-		private static function addEquipItem(itemName:String, description:String, weight:uint, atk:int, def:int, hp:int, st:int, part:String, weaponType:String, clip:String)
+		private static function addEquipItem(itemName:String, description:String, weight:uint, atk:int, def:int, hp:int, st:int, part:uint, weaponType:String, clip:String)
 		{
 			var data:Equipment = new Equipment();
 			data._itemCode = numItems;
@@ -122,20 +125,40 @@
 			numItems++;
 		}
 		
-		private static function addCraftRecipe(itemCode:int, recipe:Vector.<Point>)
+		private static function addPlaceableItem(itemName:String, description:String, weight:uint, clip:String)
 		{
+			var data:ItemData = new ItemData();
+			data._itemCode = numItems;
+			data._itemName = itemName;
+			data._description = description;
+			data._itemClass = PLACEABLE;
+			data._weight = weight;
+			data._clip = clip;
+			
+			items.push(data);
+			numItems++;
+		}
+		
+		private static function addCraftRecipe(itemCode:int, recipe:Vector.<Point>, req:int = -1)
+		{
+			if(req != -1 && req >= items.length) throw new IllegalOperationError("ItemDB : item req not exists");
+			if(req != -1 && getItem(req).itemClass != PLACEABLE) throw new IllegalOperationError("ItemDB : req is not placeable item");
 			var data:CraftData = new CraftData();
 			data._itemCode = itemCode;
 			data._recipe = recipe;
+			data._req = req;
 			
 			craftRecipes.push(data);
 		}		
 		
-		private static function addDecomposeRecipe(itemCode:int, recipe:Vector.<Point>)
+		private static function addDecomposeRecipe(itemCode:int, recipe:Vector.<Point>, req:int = -1)
 		{
+			if(req != -1 && req > items.length) throw new IllegalOperationError("ItemDB : item req not exists");
+			if(req != -1 && getItem(req).itemClass != PLACEABLE) throw new IllegalOperationError("ItemDB : req is not placeable item");
 			var data:DecomposeData = new DecomposeData();
 			data._itemCode = itemCode;
 			data._recipe = recipe;
+			data._req = req;
 			
 			decomposeRecipes.push(data);
 		}		
@@ -178,6 +201,25 @@
 					break;
 				case MATERIAL:
 					str = "material";
+					break;
+			}
+			return str;
+		}
+		
+		public static function partToString(part:uint):String {
+			var str:String;
+			switch(part){
+				case WEAPON:
+					str = "weapon";
+					break;
+				case HEAD:
+					str = "head";
+					break;
+				case BODY:
+					str = "body";
+					break;
+				case LEG:
+					str = "leg";
 					break;
 			}
 			return str;

@@ -12,7 +12,7 @@
 			root.warningDisp.mouseEnabled = false;
 			new Shade(root.shade);
 			//세이브된 설정을 불러오는 부분이 필요
-			new Settings(1, 1);
+			new Settings(0.2, 0.2);
 			new BackGroundMusic();
 			new SoundEffect();
 		}

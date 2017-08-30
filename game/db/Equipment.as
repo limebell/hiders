@@ -3,7 +3,7 @@
 	
 	public class Equipment extends ItemData {
 		
-		internal var _atk:int, _def:int, _hp:int, _st:int, _part:String, _weaponType:String;
+		internal var _atk:int, _def:int, _hp:int, _st:int, _part:uint, _weaponType:String;
 
 		public function get atk():int {
 			return _atk;
@@ -21,7 +21,7 @@
 			return _st;
 		}
 
-		public function get part():String {
+		public function get part():uint {
 			return _part;
 		}
 

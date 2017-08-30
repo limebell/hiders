@@ -17,18 +17,23 @@
 	import flash.events.MouseEvent;
 	import flash.ui.Mouse;
 	import flash.errors.IllegalOperationError;
+	import flash.geom.Point;
+	import game.event.StatusEvent;
 	
 	public class ItemManager extends EventDispatcher {
 		private var _inventory:Inventory;
 		private var _ui:InventoryUI;
 		private var _currentTarget:int;
-		private var _selectedItem:int;
-		private var _prevSelectedItem:int;
+		private var _selectedItem:Point;
+		private var _prevSelectedItem:Point;
 		private var _viewPossibleOnly:Boolean;
+		private var _equipingItems:Array;
 
 		public function ItemManager(ui:InventoryUI, inv:Object = null) {
 			var i:int, j:int;
 			_inventory = new Inventory();
+			_equipingItems = new Array();
+			
 			//무게 제한 설정
 			_inventory.maxWeight = 100;
 			
@@ -77,23 +82,35 @@
 			this.addEventListener(InventoryEvent.ITEM_DUMP, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.ITEM_CRAFT, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.ITEM_DECOMPOSE, inventoryEventHandler);
+			this.addEventListener(InventoryEvent.ITEM_EQUIP, inventoryEventHandler);
+			this.addEventListener(InventoryEvent.ITEM_UNEQUIP, inventoryEventHandler);
 			this.addEventListener(InventoryEvent.CHECKBOX, inventoryEventHandler);
 		}
 		
 		private function clickHandler(e:MouseEvent):void {
 			var i:int;
+			_prevSelectedItem = _selectedItem;
+			_selectedItem = new Point();
 			if(_ui.state != InventoryUI.CRAFT){
-				for(i = 0; i < _inventory.numItems; i++){
-					if(e.target == _ui.items[i].btn) break;
+				if(_ui.state == InventoryUI.INVENTORY){
+					for(i = 0; i < 4; i++){
+						if(_ui.equipingItems[i] != null && e.target == _ui.equipingItems[i].btn){
+							_selectedItem.x = 1;
+							break;
+						}
+					}
 				}
-				_prevSelectedItem = _selectedItem;
-				_selectedItem = i;
+				if(_selectedItem.x == 0){
+					for(i = 0; i < _inventory.numItems; i++){
+						if(e.target == _ui.items[i].btn) break;
+					}
+				}
+				_selectedItem.y = i;
 			} else {
 				for(i = 0; i < ItemDB.getNumCraftRecipe(); i++){
 					if(e.target == _ui.craftItems[i].btn) break;
 				}
-				_prevSelectedItem = _selectedItem;
-				_selectedItem = i;
+				_selectedItem.y = i;
 			}
 			refreshInventoryUI();
 		}
@@ -103,7 +120,7 @@
 				case InventoryEvent.STATE_INVENTORY:
 					if(_ui.state == InventoryUI.INVENTORY) return;
 					_ui.removeSelect(_selectedItem);
-					_prevSelectedItem = _selectedItem = -1
+					_prevSelectedItem = _selectedItem = null;
 					_ui.state = InventoryUI.INVENTORY;
 					refreshInventoryUI();
 					break;
@@ -111,7 +128,7 @@
 				case InventoryEvent.STATE_CRAFT:
 					if(_ui.state == InventoryUI.CRAFT) return;
 					_ui.removeSelect(_selectedItem);
-					_prevSelectedItem = _selectedItem = -1
+					_prevSelectedItem = _selectedItem = null;
 					_ui.state = InventoryUI.CRAFT;
 					_viewPossibleOnly = true;
 					refreshInventoryUI();
@@ -120,40 +137,58 @@
 				case InventoryEvent.STATE_DECOMPOSE:
 					if(_ui.state == InventoryUI.DECOMPOSE) return;
 					_ui.removeSelect(_selectedItem);
-					_prevSelectedItem = _selectedItem = -1
+					_prevSelectedItem = _selectedItem = null;
 					_ui.state = InventoryUI.DECOMPOSE;
 					refreshInventoryUI();
 					break;
 				
 				case InventoryEvent.ITEM_USE:
-					if(_selectedItem == -1) return;
-					useItem(_selectedItem);
+					if(_selectedItem == null) return;
+					useItem(_selectedItem.y);
 					break;
 				
 				case InventoryEvent.ITEM_DUMP:
-					if(_selectedItem == -1) return;
-					removeItemAt(_selectedItem);
+					if(_selectedItem == null) return;
+					removeItemAt(_selectedItem.y);
 					break;
 				
 				case InventoryEvent.ITEM_CRAFT:
-					if(_selectedItem == -1 || !craftable(_selectedItem)) return;
-					craftItem(_selectedItem);
+					if(_selectedItem == null|| !craftable(_selectedItem.y)) return;
+					craftItem(_selectedItem.y);
 					_ui.removeSelect(_selectedItem);
-					_prevSelectedItem = _selectedItem = -1
+					_prevSelectedItem = _selectedItem = null;
 					refreshInventoryUI();
 					break;
 				
 				case InventoryEvent.ITEM_DECOMPOSE:
-					if(_selectedItem == -1 || decomposeIndex(_inventory.itemAt(_selectedItem).itemCode) == -1) return;
-					decomposeItem(_selectedItem);
+					if(_selectedItem == null || decomposeIndex(_inventory.itemAt(_selectedItem.y).itemCode) == -1) return;
+					decomposeItem(_selectedItem.y);
 					_ui.removeSelect(_selectedItem);
-					_prevSelectedItem = _selectedItem = -1
+					_prevSelectedItem = _selectedItem = null;
+					refreshInventoryUI();
+					break;
+				
+				case InventoryEvent.ITEM_EQUIP:
+					if(_selectedItem == null || _inventory.itemAt(_selectedItem.y).itemClass != ItemDB.EQUIPMENT)
+						throw new IllegalOperationError("ItemManager : equipable not selected but equipevent is given");
+					equipItem(_selectedItem.y);
+					_ui.removeSelect(_selectedItem);
+					_prevSelectedItem = _selectedItem = null;
+					refreshInventoryUI();
+					break;
+				
+				case InventoryEvent.ITEM_UNEQUIP:
+					if(_selectedItem == null || _equipingItems[_selectedItem.y] == null)
+						throw new IllegalOperationError("ItemManager : equipable not selected but equipevent is given");
+					unequipItem(_selectedItem.y);
+					_ui.removeSelect(_selectedItem);
+					_prevSelectedItem = _selectedItem = null;
 					refreshInventoryUI();
 					break;
 				
 				case InventoryEvent.CHECKBOX:
 					_ui.removeSelect(_selectedItem);
-					_prevSelectedItem = _selectedItem = -1
+					_prevSelectedItem = _selectedItem = null;
 					_viewPossibleOnly = !_viewPossibleOnly;
 					refreshInventoryUI();
 					break;
@@ -220,8 +255,54 @@
 			removeItemAt(index);
 		}
 		
+		private function equipItem(index:int):void {
+			var equipment:Equipment;
+			equipment = Equipment(ItemDB.getItem(_inventory.itemAt(index).itemCode));
+			if(_equipingItems[equipment.part] != null) unequipItem(equipment.part);
+			_equipingItems[equipment.part] = equipment;
+			_ui.equipingItems[equipment.part] = _ui.newItem(equipment.clip, ItemDB.EQUIPMENT);
+			_ui.equipingItems[equipment.part].btn.addEventListener(MouseEvent.CLICK, clickHandler);
+			switch(equipment.part){
+				case ItemDB.WEAPON:
+					_ui.equipField.weapon.addChild(_ui.equipingItems[equipment.part].clip);
+					break;
+				case ItemDB.HEAD:
+					_ui.equipField.head.addChild(_ui.equipingItems[equipment.part].clip);
+					break;
+				case ItemDB.BODY:
+					_ui.equipField.body.addChild(_ui.equipingItems[equipment.part].clip);
+					break;
+				case ItemDB.LEG:
+					_ui.equipField.leg.addChild(_ui.equipingItems[equipment.part].clip);
+					break;
+			}
+			removeItemAt(index);
+			Game.currentGame.statusManager.dispatchEvent(new StatusEvent(StatusEvent.EQUIP_EVENT));
+		}
+		
+		private function unequipItem(index:int):void {
+			if(_equipingItems[index] == null) throw new IllegalOperationError("ItemManager : equipment not selected but unequip function called");
+			switch(index){
+				case ItemDB.WEAPON:
+					_ui.equipField.weapon.removeChild(_ui.equipingItems[index].clip);
+					break;
+				case ItemDB.HEAD:
+					_ui.equipField.head.removeChild(_ui.equipingItems[index].clip);
+					break;
+				case ItemDB.BODY:
+					_ui.equipField.body.removeChild(_ui.equipingItems[index].clip);
+					break;
+				case ItemDB.LEG:
+					_ui.equipField.leg.removeChild(_ui.equipingItems[index].clip);
+					break;
+			}
+			achieveItem(_equipingItems[index].itemCode);
+			_equipingItems[index] = null;
+			Game.currentGame.statusManager.dispatchEvent(new StatusEvent(StatusEvent.EQUIP_EVENT));
+		}
+		
 		public function inventoryUIOn():void {
-			_prevSelectedItem = _selectedItem = -1;
+			_prevSelectedItem = _selectedItem = null;
 			_ui.state = InventoryUI.INVENTORY;
 			_ui.visible = true;
 			_ui.on();
@@ -236,8 +317,9 @@
 		public function refreshInventoryUI():void {
 			var i:int, j:int, numItems:Array, count:Array, data:ItemData, curY:int, itemClass:uint;
 			_ui.selectItem(_prevSelectedItem, _selectedItem);
-			numItems = [0, 0, 0, 0];
-			count = [0, 0, 0, 0];
+			_ui.setButton();
+			numItems = [0, 0, 0, 0, 0];
+			count = [0, 0, 0, 0, 0];
 			
 			_ui.classificationBars[0].visible = _ui.classificationBars[1].visible = _ui.classificationBars[2].visible = _ui.classificationBars[3].visible = false;
 			
@@ -263,6 +345,10 @@
 				if(numItems[3] != 0) curY += _ui.classificationBars[0].height+InventoryUI.ITEM_HEIGHT*1.25*(1+int((numItems[3]-1)/InventoryUI.MAX_XNUM));
 				_ui.classificationBars[4].y = curY;
 				
+				for(i = 0; i < 4; i++){
+					
+				}
+				
 				for(i = 0; i < _inventory.numItems; i++){
 					itemClass = _inventory.itemAt(i).itemClass;
 					_ui.items[i].clip.visible = true;
@@ -276,16 +362,23 @@
 						_ui.items[i].tf.text = "";
 					} else _ui.items[i].tf.text = "";
 					
-					if(i == _selectedItem){
+					if(_selectedItem != null && i == _selectedItem.y && _selectedItem.x == 0){
+						if(_inventory.itemAt(i).itemClass == ItemDB.EQUIPMENT) _ui.setButton(InventoryUI.EQUIP);
+						else if(_inventory.itemAt(i).itemClass == ItemDB.CONSUMABLE) _ui.setButton(InventoryUI.CONSUME);
+						else _ui.setButton(InventoryUI.INVENTORY);
 						_ui.description = descriptionForUI(_inventory.itemAt(i));
 					}
+				}
+				if(_selectedItem != null && _selectedItem.x == 1){
+					_ui.setButton(InventoryUI.UNEQUIP);
+					_ui.description = descriptionForUI(null, ItemData(_equipingItems[_selectedItem.y]));
 				}
 				var stm:StatusManager = Game.currentGame.statusManager;
 				_ui.statusText = "HP : "+stm.getStatus(StatusManager.CUR_HP)+"/"+stm.getStatus(StatusManager.MAX_HP)+"\n"
 								+"ST : "+stm.getStatus(StatusManager.CUR_ST)+"/"+stm.getStatus(StatusManager.MAX_ST)+"\n"
 								+"ATK : "+stm.getStatus(StatusManager.ATK)+"\n"
 								+"DEF : "+stm.getStatus(StatusManager.DEF)+"\n"
-								+"Weight : "+_inventory.totalWeight+"/"+_inventory.maxWeight;
+								+"Weight : "+(_inventory.totalWeight+totalEquipingWeight())+"/"+_inventory.maxWeight;
 				
 			} else if(_ui.state == InventoryUI.CRAFT){
 				//state == craft
@@ -316,10 +409,11 @@
 						_ui.craftItems[i].clip.visible = true;
 						if(itemClass == ItemDB.TOOL) _ui.craftItems[i].bar.visible = false;
 						count[itemClass] += 1;
-						if(i == _selectedItem){
+						if(_selectedItem != null && i == _selectedItem.y){
 							_ui.recipeField.recipes[i].clip.visible = true;
 							data = ItemDB.getItem(ItemDB.getCraftRecipeAt(i).itemCode);
 							_ui.description = descriptionForUI(null, data);
+							if(craftable(i)) _ui.setButton(InventoryUI.CRAFT);
 							for(j = 0; j < ItemDB.getCraftRecipeAt(i).recipe.length; j++){
 								_ui.recipeField.recipes[i].vec[j].tf.text = numItem(ItemDB.getCraftRecipeAt(i).recipe[j].x)+"/"+ItemDB.getCraftRecipeAt(i).recipe[j].y;
 							}
@@ -364,13 +458,37 @@
 						_ui.items[i].tf.text = "";
 					} else _ui.items[i].tf.text = "";
 					
-					if(i == _selectedItem){
+					if(_selectedItem != null && i == _selectedItem.y){
 						_ui.recipeField.recipes[ItemDB.getNumCraftRecipe()+decomposeIndex(_inventory.itemAt(i).itemCode)].clip.visible = true;
 						_ui.description = descriptionForUI(_inventory.itemAt(i));
+						_ui.setButton(InventoryUI.DECOMPOSE);
 					}
 				}
 			}
-			if(_selectedItem == -1) _ui.description = "\n\n\n\n선택된 아이템이 없습니다.\n아이템 설명을 보려면 아이템을 클릭하여 선택해 주세요.";
+			if(_selectedItem == null) _ui.description = "\n\n\n\n선택된 아이템이 없습니다.\n아이템 설명을 보려면 아이템을 클릭하여 선택해 주세요.";
+		}
+		
+		private function totalEquipingWeight():int {
+			var i:int, weight:int = 0;
+			for(i = 0; i < 4; i ++){
+				if(_equipingItems[i] == null) continue;
+				else weight += _equipingItems[i].weight;
+			}
+			return weight;
+		}
+		
+		public function itemSpec():Array {
+			var i:int, arr:Array = [0, 0, 0, 0];
+			for(i = 0; i < 4; i++){
+				if(_equipingItems[i] == null) continue;
+				else {
+					arr[0] += _equipingItems[i].atk;
+					arr[1] += _equipingItems[i].def;
+					arr[2] += _equipingItems[i].hp;
+					arr[3] += _equipingItems[i].st;
+				}
+			}
+			return arr;
 		}
 		
 		private function descriptionForUI(info:ItemInfo, itemData:ItemData = null):String {
@@ -385,9 +503,8 @@
 			} else if(data.itemClass == ItemDB.TOOL){
 				if(info != null) mid += "내구도 : "+info.curDurability+"/"+info.maxDurability+", ";
 				else mid += "내구도 : "+Tool(data).durability+", ";
-			}
-			else if(data.itemClass == ItemDB.EQUIPMENT){
-				mid += "부위 : "+Equipment(data).part+", ";
+			} else if(data.itemClass == ItemDB.EQUIPMENT){
+				mid += "부위 : "+ItemDB.partToString(Equipment(data).part)+", ";
 				if(Equipment(data).part == ItemDB.WEAPON) mid += "무기 종류 : "+Equipment(data).weaponType+", ";
 				if(Equipment(data).hp != 0) mid += "최대 체력 +"+Equipment(data).hp+", ";
 				if(Equipment(data).st != 0) mid += "최대 스테미너 +"+Equipment(data).st+", ";
@@ -413,7 +530,7 @@
 			//item 획득
 			var flag:Boolean = true, info:ItemInfo, itemClass:uint, i:int;
 			itemClass = ItemDB.getItem(code).itemClass;
-			if(itemClass == ItemDB.EQUIPMENT || itemClass == ItemDB.TOOL){
+			if(itemClass == ItemDB.EQUIPMENT || itemClass == ItemDB.TOOL || itemClass == ItemDB.PLACEABLE){
 				for(i = 0; i < amount; i++){
 					info = new ItemInfo(ItemDB.getItem(code), 1);
 					if(itemClass == ItemDB.TOOL) info.curDurability = info.maxDurability;
@@ -446,7 +563,7 @@
 			if(_inventory.removeAmountAt(index, amount)){
 				_ui.itemField.removeChild(_ui.items[index].clip);
 				_ui.items.removeAt(index);
-				if(_ui.state != InventoryUI.CRAFT) _prevSelectedItem = _selectedItem = -1;
+				if(_ui.state != InventoryUI.CRAFT) _prevSelectedItem = _selectedItem = null;
 			}
 			refreshInventoryUI();
 		}

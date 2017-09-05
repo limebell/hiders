@@ -10,14 +10,14 @@
 			
 			addJob("소방관",
 							"최종 체력이 10퍼센트 증가합니다.",
-							4, 7, 120, 100, "portrait_firefighter");
+							4, 7, 120, 100, 150, "portrait_firefighter");
 			
 			addJob("경찰",
 							"아이템 \"글록 19\"와 \"권총탄\" 20개를 지닌채로 시작합니다.",
-							3, 3, 80, 80, "portrait_police");
+							3, 3, 80, 80, 100, "portrait_police");
 		}
 		
-		private static function addJob(jobName:String, description:String, baseATK:int, baseDEF:int, baseHP:int, baseST:int, clip:String):void {
+		private static function addJob(jobName:String, description:String, baseATK:int, baseDEF:int, baseHP:int, baseST:int, baseWeight:int, clip:String):void {
 			var data:JobData = new JobData();
 			data._name = jobName;
 			data._description = description;
@@ -25,6 +25,7 @@
 			data._baseDEF = baseDEF;
 			data._baseHP = baseHP;
 			data._baseST = baseST;
+			data._baseWeight = baseWeight;
 			data._clip = clip;
 			
 			jobs.push(data);

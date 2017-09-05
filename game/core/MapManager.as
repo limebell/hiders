@@ -37,13 +37,21 @@
 			_world.character.goLeft();
 			
 			if(!Map.isBuilding(_globalLocation)){
-				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
-				moveTo(String(int(_globalLocation)-1), SPD_HOR);
+				if(Game.currentGame.statusManager.move(StatusManager.MOVE_CAVE_HORIZONTAL)){
+					moveTo(String(int(_globalLocation)-1), SPD_HOR);
+				} else {
+					trace("너무 무거워서 움직일 수 없음");
+					return;
+				}
 			}
 			else {
-				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 1);
-				for(var i:int = 0; i < _globalLocation.length; i++) if(_globalLocation.charAt(i) == "-") break;
-				moveTo(_globalLocation.substr(0, i+1)+(Map.buildingIndex(_globalLocation)-1), SPD_HOR);
+				if(Game.currentGame.statusManager.move(StatusManager.MOVE_BUILDING_HORIZONTAL)){
+					for(var i:int = 0; i < _globalLocation.length; i++) if(_globalLocation.charAt(i) == "-") break;
+					moveTo(_globalLocation.substr(0, i+1)+(Map.buildingIndex(_globalLocation)-1), SPD_HOR);
+				} else {
+					trace("너무 무거워서 움직일 수 없음");
+					return;
+				}
 			}
 		}
 		
@@ -53,12 +61,20 @@
 			_world.character.goRight();
 			
 			if(!Map.isBuilding(_globalLocation)){
-				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
-				moveTo(String(int(_globalLocation)+1), SPD_HOR);
+				if(Game.currentGame.statusManager.move(StatusManager.MOVE_CAVE_HORIZONTAL)){
+					moveTo(String(int(_globalLocation)+1), SPD_HOR);
+				} else {
+					trace("너무 무거워서 움직일 수 없음");
+					return;
+				}
 			}
 			else{
-				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 1);
-				moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation))+"-"+(Map.buildingIndex(_globalLocation)+1), SPD_HOR);
+				if(Game.currentGame.statusManager.move(StatusManager.MOVE_BUILDING_HORIZONTAL)){
+					moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation))+"-"+(Map.buildingIndex(_globalLocation)+1), SPD_HOR);
+				} else {
+					trace("너무 무거워서 움직일 수 없음");
+					return;
+				}
 			}
 		}
 		
@@ -67,15 +83,23 @@
 			if(Game.currentGame.noAction) return;
 			if(!Map.isBuilding(_globalLocation)){
 				_world.character.climb();
-				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
-				_world.initInterection();
-				moveFields(_world.backField.x, _world.backField.y + World.CAVE_HEIGHT, 60);
-				Shade.fadeOut(60);
-				_tween.addEventListener(TweenEvent.MOTION_FINISH, enterBuilding);
+				if(Game.currentGame.statusManager.move(StatusManager.MOVE_ENTERLEAVE)){
+					_world.initInterection();
+					moveFields(_world.backField.x, _world.backField.y + World.CAVE_HEIGHT, 60);
+					Shade.fadeOut(60);
+					_tween.addEventListener(TweenEvent.MOTION_FINISH, enterBuilding);
+				} else {
+					trace("너무 무거워서 움직일 수 없음");
+					return;
+				}
 			} else {
 				_world.character.goRight();
-				Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
-				moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation)+1)+"-"+(Map.buildingIndex(_globalLocation)), SPD_HOR, true);
+				if(Game.currentGame.statusManager.move(StatusManager.MOVE_BUILDING_VERTICAL)){
+					moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation)+1)+"-"+(Map.buildingIndex(_globalLocation)), SPD_HOR, true);
+				} else {
+					trace("너무 무거워서 움직일 수 없음");
+					return;
+				}
 			}
 		}
 		
@@ -87,15 +111,23 @@
 			} else {
 				if(Map.buildingFloor(_globalLocation) == 0 && Map.buildingIndex(_globalLocation) == _world.map.buildingAt(Map.buildingNum(_globalLocation)).connectedRoom){
 					_world.character.climb();
-					Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 5);
-					_world.initInterection();
-					moveFields(_world.backField.x, _world.backField.y - World.CAVE_HEIGHT, 60);
-					Shade.fadeOut(60);
-					_tween.addEventListener(TweenEvent.MOTION_FINISH, leaveBuilding);
+					if(Game.currentGame.statusManager.move(StatusManager.MOVE_ENTERLEAVE)){
+						_world.initInterection();
+						moveFields(_world.backField.x, _world.backField.y - World.CAVE_HEIGHT, 60);
+						Shade.fadeOut(60);
+						_tween.addEventListener(TweenEvent.MOTION_FINISH, leaveBuilding);
+					} else {
+						trace("너무 무거워서 움직일 수 없음");
+						return;
+					}
 				} else {
 					_world.character.goLeft();
-					Game.currentGame.statusManager.sub(StatusManager.CUR_ST, 2);
-					moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation)-1)+"-"+(Map.buildingIndex(_globalLocation)), SPD_HOR, true);
+					if(Game.currentGame.statusManager.move(StatusManager.MOVE_BUILDING_VERTICAL)){
+						moveTo((Map.buildingNum(_globalLocation))+":"+(Map.buildingFloor(_globalLocation)-1)+"-"+(Map.buildingIndex(_globalLocation)), SPD_HOR, true);
+					} else {
+						trace("너무 무거워서 움직일 수 없음");
+						return;
+					}
 				}
 				
 				

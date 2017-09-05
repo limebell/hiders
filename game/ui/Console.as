@@ -78,7 +78,7 @@
 				case "help":
 					msg = "currentLocation@\ncaveLength@\nstatus@\n"+
 							"add@target(string),amount(int)\nsub@target(string),amount(int)\nteleportTo@gloc(string)\ngoto@gloc(string),spd(int)\n"+
-							"addItem@itemCode(int),amount(int)\nitemList@\ncraftRecipeList@\ndecomposeRecipeList@\nitemInfo@itemCode(int)";
+							"addItem@itemCode(int),amount(int)\nitemList@\ncraftRecipeList@\ndecomposeRecipeList@\nitemInfo@itemCode(int)\ngameOver@";
 					break;
 				
 				case "currentLocation":
@@ -273,6 +273,10 @@
 					else if(int(temp1) >= ItemDB.getNumItems()) msg = "itemCode(int)의 범위가 잘못되었습니다.";
 					else msg = getItemInfo(int(temp1));
 					break;
+				
+				case "gameOver":
+					Game.currentGame.gameOver();
+					return;
 				
 				default:
 					msg = "존재하지 않는 명령어 입니다. help@를 입력하여 존재하는 명령어를 알아보세요.";

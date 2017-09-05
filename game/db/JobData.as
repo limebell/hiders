@@ -4,7 +4,7 @@
 	
 	public class JobData {
 		
-		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _clip:String;
+		internal var _name:String, _description:String, _baseATK:int, _baseDEF:int, _baseHP:int, _baseST:int, _baseWeight:int, _clip:String;
 
 		public function get jobName():String {
 			return _name;
@@ -28,6 +28,10 @@
 		
 		public function get baseST():int {
 			return _baseST;
+		}
+		
+		public function get baseWeight():int {
+			return _baseWeight;
 		}
 		
 		public function get clip():MovieClip {

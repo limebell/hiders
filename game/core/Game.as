@@ -95,6 +95,11 @@
 			Shade.fadeIn();
 		}
 		
+		public function gameOver():void {
+			endGame();
+			StageInfo.root.gotoAndStop("gameover");
+		}
+		
 		private function endGame():void {
 			_display.removeChild(_world);
 			_display.removeChild(_ui);

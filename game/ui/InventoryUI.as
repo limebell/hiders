@@ -431,8 +431,26 @@
 			return _state;
 		}
 		
-		public function set statusText(text:String):void {
-			_equipField.statusText.text = text;
+		public function statusText(text:String, weightText:String, level:int):void {
+			var tempTF:TextFormat = new TextFormat(FontDB.getFontName(FontDB.NBareun), 8);
+			tempTF.align = "left";
+			
+			_equipField.statusText.text = text + weightText;
+			switch(level){
+				case 0:
+					tempTF.color = 0xffffff;
+					break;
+				case 1:
+					tempTF.color = 0xffdd00;
+					break;
+				case 2:
+					tempTF.color = 0xff8800;
+					break;
+				case 3:
+					tempTF.color = 0xff0000;
+					break;
+			}
+			_equipField.statusText.setTextFormat(tempTF, text.length, _equipField.statusText.length);
 		}
 		
 		public function set description(text:String):void {

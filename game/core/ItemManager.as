@@ -10,6 +10,8 @@
 	import game.db.Consumable;
 	import game.db.Equipment;
 	import game.db.Tool;
+	import game.event.StatusEvent;
+	import game.db.JobDB;
 	
 	import flash.display.MovieClip;
 	import flash.text.TextField;
@@ -18,7 +20,6 @@
 	import flash.ui.Mouse;
 	import flash.errors.IllegalOperationError;
 	import flash.geom.Point;
-	import game.event.StatusEvent;
 	
 	public class ItemManager extends EventDispatcher {
 		private var _inventory:Inventory;
@@ -29,13 +30,17 @@
 		private var _viewPossibleOnly:Boolean;
 		private var _equipingItems:Array;
 
-		public function ItemManager(ui:InventoryUI, inv:Object = null) {
+		public function ItemManager(ui:InventoryUI, inv:Inventory = null) {
 			var i:int, j:int;
-			_inventory = new Inventory();
-			_equipingItems = new Array();
 			
-			//무게 제한 설정
-			_inventory.maxWeight = 100;
+			if(inv == null){
+				_inventory = new Inventory();
+				
+				//무게 제한 설정
+				_inventory.maxWeight = JobDB.getJobAt(Game.currentGame.job).baseWeight;
+			} else _inventory = inv;
+			
+			_equipingItems = new Array();
 			
 			_ui = ui;
 			_viewPossibleOnly = true;
@@ -373,12 +378,13 @@
 					_ui.setButton(InventoryUI.UNEQUIP);
 					_ui.description = descriptionForUI(null, ItemData(_equipingItems[_selectedItem.y]));
 				}
-				var stm:StatusManager = Game.currentGame.statusManager;
-				_ui.statusText = "HP : "+stm.getStatus(StatusManager.CUR_HP)+"/"+stm.getStatus(StatusManager.MAX_HP)+"\n"
+				var stm:StatusManager = Game.currentGame.statusManager, str:String;
+				str = "HP : "+stm.getStatus(StatusManager.CUR_HP)+"/"+stm.getStatus(StatusManager.MAX_HP)+"\n"
 								+"ST : "+stm.getStatus(StatusManager.CUR_ST)+"/"+stm.getStatus(StatusManager.MAX_ST)+"\n"
 								+"ATK : "+stm.getStatus(StatusManager.ATK)+"\n"
 								+"DEF : "+stm.getStatus(StatusManager.DEF)+"\n"
-								+"Weight : "+(_inventory.totalWeight+totalEquipingWeight())+"/"+_inventory.maxWeight;
+								+"Weight : ";
+				_ui.statusText(str, (totalWeight())+"/"+_inventory.maxWeight, weightLevel());
 				
 			} else if(_ui.state == InventoryUI.CRAFT){
 				//state == craft
@@ -466,6 +472,21 @@
 				}
 			}
 			if(_selectedItem == null) _ui.description = "\n\n\n\n선택된 아이템이 없습니다.\n아이템 설명을 보려면 아이템을 클릭하여 선택해 주세요.";
+			
+			checkWeight();
+		}
+		
+		private function checkWeight():void {
+			Game.currentGame.statusManager.weightLevel = weightLevel();
+		}
+		
+		private function weightLevel():int {
+			var level:int;
+			if(totalWeight() > _inventory.maxWeight*1.5) level = 3;
+			else if(totalWeight() > _inventory.maxWeight*1.3) level = 2;
+			else if(totalWeight() > _inventory.maxWeight) level = 1;
+			else Game.currentGame.statusManager.weightLevel = 0;
+			return level;
 		}
 		
 		private function totalEquipingWeight():int {
@@ -477,7 +498,12 @@
 			return weight;
 		}
 		
+		public function totalWeight():int {
+			return _inventory.totalWeight+totalEquipingWeight();
+		}
+		
 		public function itemSpec():Array {
+			//used in StatusManager
 			var i:int, arr:Array = [0, 0, 0, 0];
 			for(i = 0; i < 4; i++){
 				if(_equipingItems[i] == null) continue;
@@ -555,7 +581,8 @@
 					_ui.items[i].btn.addEventListener(MouseEvent.CLICK, clickHandler);
 				}
 			}
-			if(_ui.visible) refreshInventoryUI();
+			
+			refreshInventoryUI();
 		}
 		
 		public function removeItemAt(index:int, amount:int = 1):void {
@@ -565,6 +592,7 @@
 				_ui.items.removeAt(index);
 				if(_ui.state != InventoryUI.CRAFT) _prevSelectedItem = _selectedItem = null;
 			}
+			
 			refreshInventoryUI();
 		}
 

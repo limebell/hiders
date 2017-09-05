@@ -16,7 +16,11 @@
 		MAX_HP:String = "maxHP",
 		MAX_ST:String = "maxST",
 		CUR_HP:String = "curHP",
-		CUR_ST:String = "curST";
+		CUR_ST:String = "curST",
+		MOVE_CAVE_HORIZONTAL:String = "moveCaveHorizontal",
+		MOVE_ENTERLEAVE:String = "moveEnterleave",
+		MOVE_BUILDING_HORIZONTAL:String = "moveBuildingHorizontal",
+		MOVE_BUILDING_VERTICAL:String = "moveBuildingVertical";
 		//ST for stamina
 		
 		private var _tempData:JobData;
@@ -37,6 +41,8 @@
 		private var _itemDEF:int;
 		private var _itemHP:int;
 		private var _itemST:int;
+		
+		private var _states:Array;
 		
 		
 		public function StatusManager(ui:GameplayUI, isNew:Boolean, jobIndex:int, atk:int = -1, def:int = -1, maxHP:int = -1, maxST:int = -1, curHP:int = -1, curST:int = -1) {
@@ -66,6 +72,8 @@
 			else
 				_curST = curST;
 			
+			//Heavy level, poisoned, blooding
+			_states = [0, false, false, false];
 			this.addEventListener(StatusEvent.EQUIP_EVENT, equipEventHandler);
 			refresh();
 		}
@@ -174,6 +182,32 @@
 			return val;
 		}
 		
+		public function move(moveType:String):Boolean {
+			var w:Number;
+			
+			if(_states[0] == 0) w = 1;
+			else if(_states[0] == 1) w = 2;
+			else if(_states[0] == 2) w = 4;
+			else return false;
+			
+			switch(moveType){
+				case MOVE_CAVE_HORIZONTAL:
+					sub(CUR_ST, int(2*w));
+					break;
+				case MOVE_ENTERLEAVE:
+					sub(CUR_ST, int(5*w));
+					break;
+				case MOVE_BUILDING_HORIZONTAL:
+					sub(CUR_ST, int(1*w));
+					break;
+				case MOVE_BUILDING_VERTICAL:
+					sub(CUR_ST, int(2*w));
+					break;
+			}
+			
+			return true;
+		}
+		
 		private function equipEventHandler(e:StatusEvent):void {
 			var arr:Array = Game.currentGame.itemManager.itemSpec();
 			_itemATK = arr[0];
@@ -193,7 +227,7 @@
 			}
 			if( _curHP <= 0 ){
 				_curHP = 0;
-				trace("gameover");
+				Game.currentGame.gameOver();
 			}
 			
 			if(_tweenHP != null && _tweenHP.isPlaying) _tweenHP.stop();
@@ -204,10 +238,18 @@
 			_ui.stTxt = _curST+"/"+getStatus(MAX_ST);
 		}
 		
+		private function refreshState():void {
+			
+		}
+		
 		public function get statusForConsole():String {
 			return "ATK : "+_atk+", itemATK : "+_itemATK+", finalATK : "+getStatus(ATK)+", DEF : "+_def+", itemDEF : "+_itemDEF+", finalDEF : "+getStatus(DEF)+
 				", maxHP : "+_maxHP+", itemHP : "+_itemHP+", finalMaxHP : "+getStatus(MAX_HP)+", curHP : "+_curHP+
 				", maxST : "+_maxST+", itemST : "+_itemST+", finalMaxST : "+getStatus(MAX_HP)+", curST : "+_curST;
+		}
+		
+		public function set weightLevel(level:int):void {
+			_states[0] = level;
 		}
 		
 	}
